@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Inter } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -17,9 +18,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-<body className={`${inter.className} bg-dark-2`}>
-          {children}
-      </body>
+      <ClerkProvider
+      appearance = {{
+        layout:{
+          logoImageUrl: '/icons/logo.svg',
+          socialButtonsVariant:'iconButton',
+        },
+        //aici se modifica cum arata sign in si sign out
+        variables:{
+          colorText:'#1c1f2e',
+          colorPrimary:'#0E78F9',
+          colorBackground:'#fff',
+          colorInputBackground:'#fff',
+          colorInputText:'252a41'
+
+        }
+      }}
+      >
+          <body className={`${inter.className} bg-dark-2`}>
+            {children}
+          </body>
+      </ClerkProvider>
     </html>
   );
 }

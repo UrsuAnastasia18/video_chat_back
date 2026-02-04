@@ -25,6 +25,16 @@
 
 @theme inline {
   --color-orange-1: #FF742E;
+  --color-blue-1: #0E78F9;
+  --color-dark-1: #1C1F2E;
+  --color-dark-2: #161925;
+  --color-dark-3: #252A41;
+  --color-dark-4: #1E2757;
+  --color-sky-1: #C9DDFF ;
+  --color-sky-2: #ECF0FF ;
+  --color-sky-3: #F5FCFF ;
+  --color-purple-1: #9D00FF;
+  --color-yellow-1: #F9A90E;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);

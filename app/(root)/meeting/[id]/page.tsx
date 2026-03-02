@@ -27,7 +27,7 @@ const Meeting = async ({ params }: MeetingPageProps) => {
       <StreamCall call={call}>
         <StreamTheme>
           {!isSetupComplete ? (
-            <MeetingSetup />
+            <MeetingSetup setIsSetupComplete={setIsSetupComplete}/>
           ) : (
             <MeetingRoom/>
           )}

@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
  import '@stream-io/video-react-sdk/dist/css/styles.css';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const inter = Inter({ subsets: ["latin"] });
 

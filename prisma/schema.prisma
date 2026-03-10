@@ -1,0 +1,282 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  STUDENT
+  TEACHER_ADMIN
+}
+
+enum LessonStatus {
+  SCHEDULED
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PENDING
+  PRESENT
+  ABSENT
+}
+
+enum GradeType {
+  WORKSHEET_AUTO
+  ORAL_MANUAL
+}
+
+enum WorksheetSubmissionStatus {
+  IN_PROGRESS
+  SUBMITTED
+  REVIEWED
+}
+
+model User {
+  id          String   @id @default(cuid())
+  clerkUserId String   @unique
+  email       String   @unique
+  firstName   String
+  lastName    String
+  imageUrl    String?
+  role        UserRole
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  studentProfile    StudentProfile?
+  teacherProfile    TeacherProfile?
+  createdBooks      Book[]             @relation("BookCreatedBy")
+  createdWorksheets Worksheet[]        @relation("WorksheetCreatedBy")
+  createdLessons    Lesson[]           @relation("LessonCreatedBy")
+  gradesGiven       Grade[]            @relation("GradeGivenBy")
+  lessonAttendances LessonAttendance[]
+}
+
+model StudentProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  currentLevelId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentLevel         EnglishLevel          @relation(fields: [currentLevelId], references: [id])
+  groupMemberships     GroupMembership[]
+  worksheetSubmissions WorksheetSubmission[]
+  grades               Grade[]
+  levelHistory         StudentLevelHistory[] @relation("StudentLevelHistoryStudent")
+}
+
+model TeacherProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  managedGroups       StudyGroup[]
+  changedLevelHistory StudentLevelHistory[] @relation("StudentLevelHistoryChangedBy")
+}
+
+model EnglishLevel {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  title       String
+  orderIndex  Int      @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  students         StudentProfile[]
+  books            Book[]
+  worksheets       Worksheet[]
+  fromLevelHistory StudentLevelHistory[] @relation("StudentLevelHistoryFromLevel")
+  toLevelHistory   StudentLevelHistory[] @relation("StudentLevelHistoryToLevel")
+}
+
+model StudentLevelHistory {
+  id                 String   @id @default(cuid())
+  studentId          String
+  fromLevelId        String?
+  toLevelId          String
+  changedByTeacherId String?
+  note               String?
+  changedAt          DateTime @default(now())
+
+  student          StudentProfile  @relation("StudentLevelHistoryStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  fromLevel        EnglishLevel?   @relation("StudentLevelHistoryFromLevel", fields: [fromLevelId], references: [id])
+  toLevel          EnglishLevel    @relation("StudentLevelHistoryToLevel", fields: [toLevelId], references: [id])
+  changedByTeacher TeacherProfile? @relation("StudentLevelHistoryChangedBy", fields: [changedByTeacherId], references: [id])
+}
+
+model StudyGroup {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  teacherId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  teacher     TeacherProfile    @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  memberships GroupMembership[]
+  lessons     Lesson[]
+
+  @@unique([teacherId, name])
+}
+
+model GroupMembership {
+  id        String   @id @default(cuid())
+  groupId   String
+  studentId String
+  joinedAt  DateTime @default(now())
+  isActive  Boolean  @default(true)
+
+  group   StudyGroup     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, studentId])
+}
+
+model Lesson {
+  id             String       @id @default(cuid())
+  title          String
+  description    String?
+  scheduledStart DateTime
+  scheduledEnd   DateTime
+  status         LessonStatus @default(SCHEDULED)
+  streamCallId   String       @unique
+  createdById    String
+  groupId        String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  createdBy   User               @relation("LessonCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  group       StudyGroup         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  recordings  LessonRecording[]
+  attendances LessonAttendance[]
+  grades      Grade[]
+
+  @@index([scheduledStart])
+  @@index([groupId, scheduledStart])
+}
+
+model LessonRecording {
+  id                String    @id @default(cuid())
+  lessonId          String
+  streamRecordingId String    @unique
+  title             String?
+  recordingUrl      String
+  startedAt         DateTime?
+  endedAt           DateTime?
+  createdAt         DateTime  @default(now())
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+}
+
+model LessonAttendance {
+  id        String           @id @default(cuid())
+  lessonId  String
+  userId    String
+  status    AttendanceStatus @default(PENDING)
+  joinedAt  DateTime?
+  leftAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, userId])
+}
+
+model Book {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  author        String?
+  publisher     String?
+  coverImageUrl String?
+  resourceUrl   String?
+  isActive      Boolean  @default(true)
+  levelId       String
+  createdById   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  level     EnglishLevel @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  createdBy User?        @relation("BookCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+}
+
+model Worksheet {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  instructions String?
+  resourceUrl  String?
+  maxScore     Int      @default(100)
+  passingScore Int?
+  isActive     Boolean  @default(true)
+  levelId      String
+  createdById  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  level       EnglishLevel          @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  createdBy   User?                 @relation("WorksheetCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  submissions WorksheetSubmission[]
+}
+
+model WorksheetSubmission {
+  id            String                    @id @default(cuid())
+  worksheetId   String
+  studentId     String
+  attemptNumber Int                       @default(1)
+  answersJson   Json?
+  score         Int?
+  submittedAt   DateTime?
+  status        WorksheetSubmissionStatus @default(IN_PROGRESS)
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  worksheet Worksheet      @relation(fields: [worksheetId], references: [id], onDelete: Cascade)
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  grades    Grade[]
+
+  @@unique([worksheetId, studentId, attemptNumber])
+}
+
+model Grade {
+  id                    String    @id @default(cuid())
+  studentId             String
+  teacherId             String?
+  lessonId              String?
+  worksheetSubmissionId String?
+  type                  GradeType
+  value                 Int
+  comment               String?
+  gradedAt              DateTime  @default(now())
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  student             StudentProfile       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher             User?                @relation("GradeGivenBy", fields: [teacherId], references: [id], onDelete: SetNull)
+  lesson              Lesson?              @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  worksheetSubmission WorksheetSubmission? @relation(fields: [worksheetSubmissionId], references: [id], onDelete: SetNull)
+
+  @@index([studentId, gradedAt])
+}
+
+model GuideArticle {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

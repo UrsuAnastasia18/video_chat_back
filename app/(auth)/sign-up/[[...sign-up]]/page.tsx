@@ -1,12 +1,9 @@
-import { SignUp } from '@clerk/nextjs'
-import React from 'react'
+import { redirect } from "next/navigation";
 
-const SignUpPage = () => {
-  return (
-    <main className="flex h-screen w-full items-center justify-center">
-        <SignUp/>
-    </main>
-  )
+/**
+ * If a user lands on /sign-up directly, redirect them to the role selection page.
+ * The actual sign-up happens at /sign-up/student or /sign-up/teacher.
+ */
+export default function SignUpPage() {
+  redirect("/sign-up-role");
 }
-
-export default SignUpPage

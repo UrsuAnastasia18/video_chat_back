@@ -26,6 +26,11 @@ export const sidebarLinks = [
         route: '/personal-room',
         imgUrl: '/icons/add-personal.svg',
     },
+    {
+        label: 'My Groups',
+        route: '/teacher/groups',
+        imgUrl: '/icons/groups.svg',
+    },
 ]
 
 export const avatarImages = [

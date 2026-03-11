@@ -6,24 +6,53 @@ import MobileNav from './MobileNav'
 
 const Navbar = () => {
   return (
-    //pe aceasta linie de mai jos modific dimensiunile navbarului
-    //mai jos la image adaug imaginea logoului sus pe stanga
-    //in tagul p adaug numele aplicatiei si se putea de pus si max-sm:hidden tipa pe versiune mobile sa nu se vada titlu
-    <nav className='flex flex-between z-50 w-full bg-amber-400 px-6 py-4 lg:px-10'>
-      <Link href="/" className="flex items-center gap-1">
-        <Image
-        src="/icons/logo.svg"
-        width={32}
-        height={32}
-        alt="English logo"
-        className='max-sm:size-10'
-        />
-        <p className="text-[26px] font-extrabold text-amber-950 ">Hello English</p>
+    <nav
+      className="flex-between fixed z-50 w-full px-6 py-3.5 lg:px-10"
+      style={{
+        background: '#1e2d40',
+        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        boxShadow: '0 2px 16px rgba(0,0,0,0.2)',
+      }}
+    >
+      {/* Logo + Brand */}
+      <Link href="/" className="flex items-center gap-3">
+        <div
+          className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden shrink-0"
+          style={{
+            background: 'rgba(79,142,247,0.15)',
+            border: '1px solid rgba(79,142,247,0.3)',
+          }}
+        >
+          <Image
+            src="/icons/logo.svg"
+            width={22}
+            height={22}
+            alt="Hello English logo"
+          />
+        </div>
+        <div className="flex items-baseline gap-1.5 max-sm:hidden">
+          <span className="text-[20px] font-bold text-white tracking-tight leading-none">
+            Hello
+          </span>
+          <span
+            className="text-[20px] font-bold tracking-tight leading-none"
+            style={{ color: '#4f8ef7' }}
+          >
+            English
+          </span>
+        </div>
       </Link>
-      
-      <div className="flex-between gap-5">
+
+      {/* Right */}
+      <div className="flex items-center gap-4">
         <SignedIn>
-          <UserButton />
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: 'h-8 w-8',
+              },
+            }}
+          />
         </SignedIn>
         <MobileNav />
       </div>
@@ -32,5 +61,3 @@ const Navbar = () => {
 }
 
 export default Navbar
-
-

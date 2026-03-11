@@ -61,7 +61,7 @@ export default function GroupsPage() {
 
                 <button
                     onClick={() => setModalOpen(true)}
-                    className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 flex-shrink-0"
+                    className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 shrink-0"
                     style={{
                         background: '#4f8ef7',
                         boxShadow: '0 4px 14px rgba(79,142,247,0.35)',
@@ -141,7 +141,7 @@ function GroupCard({ group }: { group: Group }) {
                 {/* Icon + Name */}
                 <div className="flex items-start gap-3">
                     <div
-                        className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
                         style={{ background: 'rgba(79,142,247,0.1)' }}
                     >
                         <svg

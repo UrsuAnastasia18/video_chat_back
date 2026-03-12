@@ -1,0 +1,2 @@
+ALTER TABLE "Lesson"
+ALTER COLUMN "streamCallId" DROP NOT NULL;

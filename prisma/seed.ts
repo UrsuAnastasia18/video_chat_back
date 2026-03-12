@@ -128,6 +128,49 @@ async function main() {
       });
       console.log(`    ↳ Added ${student.firstName} ${student.lastName} to ${group.name}`);
     }
+
+    const now = new Date();
+    const upcomingStart = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const upcomingEnd = new Date(upcomingStart.getTime() + 60 * 60 * 1000);
+    const pastStart = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+    const pastEnd = new Date(pastStart.getTime() + 60 * 60 * 1000);
+
+    const existingLessons = await prisma.lesson.findMany({
+      where: {
+        groupId: group.id,
+        createdById: teacherUser.id,
+      },
+      select: { id: true },
+      take: 2,
+    });
+
+    if (existingLessons.length === 0) {
+      await prisma.lesson.create({
+        data: {
+          title: "A1 Speaking Practice",
+          description: "Daily conversation and pronunciation drills.",
+          scheduledStart: upcomingStart,
+          scheduledEnd: upcomingEnd,
+          status: "SCHEDULED",
+          groupId: group.id,
+          createdById: teacherUser.id,
+        },
+      });
+
+      await prisma.lesson.create({
+        data: {
+          title: "A1 Grammar Review",
+          description: "Past lesson recap for basic grammar structures.",
+          scheduledStart: pastStart,
+          scheduledEnd: pastEnd,
+          status: "COMPLETED",
+          groupId: group.id,
+          createdById: teacherUser.id,
+        },
+      });
+
+      console.log(`    ↳ Added demo lessons for ${group.name}`);
+    }
   }
 
   console.log("\n🎉 Seed completed successfully!");

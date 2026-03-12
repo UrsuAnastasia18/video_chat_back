@@ -154,7 +154,7 @@ model Lesson {
   scheduledStart DateTime
   scheduledEnd   DateTime
   status         LessonStatus @default(SCHEDULED)
-  streamCallId   String       @unique
+  streamCallId   String?      @unique
   createdById    String
   groupId        String
   createdAt      DateTime     @default(now())

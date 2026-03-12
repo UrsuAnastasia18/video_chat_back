@@ -3,15 +3,38 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useGetCalls } from "@/hooks/useGetCalls";
 import { useRouter } from "next/navigation";
-import { Call, CallRecording } from "@stream-io/video-react-sdk";
+import { CallRecording } from "@stream-io/video-react-sdk";
 import MeetingCard from "./MeetingCard";
 import { Loader } from "./Loader";
 import { toast } from "sonner";
 
+interface LessonItem {
+  id: string;
+  title: string;
+  description: string | null;
+  scheduledStart: string;
+  scheduledEnd: string;
+  status: "SCHEDULED" | "LIVE" | "COMPLETED" | "CANCELLED";
+  streamCallId: string | null;
+  group: {
+    id: string;
+    name: string;
+    level: {
+      id: string;
+      code: string;
+      title: string;
+    };
+  };
+}
+
 const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
-  const { endedCalls, upcomingCalls, callRecordings, isLoading } = useGetCalls();
+  const { callRecordings, isLoading: recordingsLoading } = useGetCalls({
+    enabled: type === "recordings",
+  });
   const router = useRouter();
   const [recordings, setRecordings] = useState<CallRecording[]>([]);
+    const [lessons, setLessons] = useState<LessonItem[]>([]);
+  const [isLessonsLoading, setIsLessonsLoading] = useState(false);
 
   useEffect(() => {
     if (type !== "recordings") return;
@@ -27,7 +50,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
           .flatMap((c) => c.recordings);
 
         setRecordings(recs);
-      } catch (error) {
+      } catch  {
         toast("Try again");
       }
     };
@@ -35,33 +58,53 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
     fetchRecordings();
   }, [type, callRecordings]);
 
+  useEffect(() => {
+    if (type === "recordings") return;
+
+    const fetchLessons = async () => {
+      setIsLessonsLoading(true);
+      try {
+        const query = type === "upcoming" ? "?upcoming=true" : "?previous=true";
+        const res = await fetch(`/api/lessons${query}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error ?? "Failed to load lessons");
+        }
+
+        setLessons((data.lessons ?? []) as LessonItem[]);
+      } catch {
+        toast.error("Failed to load lessons");
+      } finally {
+        setIsLessonsLoading(false);
+      }
+    };
+
+    fetchLessons();
+  }, [type]);
+
   const noCallsMessage = useMemo(() => {
     switch (type) {
       case "ended":
-        return "No previous calls";
+       return "No previous lessons";
       case "recordings":
         return "No recordings";
       case "upcoming":
-        return "No upcoming calls";
+        return "No upcoming lessons";
     }
   }, [type]);
 
-  const calls: Call[] = useMemo(() => {
-    if (type === "ended") return endedCalls;
-    if (type === "upcoming") return upcomingCalls;
-    return [];
-  }, [type, endedCalls, upcomingCalls]);
+  if ((type === "recordings" && recordingsLoading) || (type !== "recordings" && isLessonsLoading)) {
+    return <Loader />;
+  }
 
-  if (isLoading) return <Loader />;
-
-  // ✅ RECORDINGS render (CallRecording)
   if (type === "recordings") {
     return (
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         {recordings.length > 0 ? (
           recordings.map((rec) => (
             <MeetingCard
-              key={rec.url} // recordings nu au id ca un Call
+              key={rec.url}
               icon="/icons/recording.svg"
               title={rec.filename?.substring(0, 20) || "Recording"}
               date={new Date(rec.start_time).toLocaleString()}
@@ -78,23 +121,41 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
       </div>
     );
   }
-
-  // ✅ CALLS render (Call)
+   // ✅ CALLS render (Call)
   return (
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-      {calls.length > 0 ? (
-        calls.map((call) => (
+      {lessons.length > 0 ? (
+        lessons.map((lesson) => {
+          const hasCallLink = !!lesson.streamCallId;
+          const meetingPath = hasCallLink ? `/meeting/${lesson.streamCallId}` : "";
+          const shareLink = hasCallLink
+            ? `${process.env.NEXT_PUBLIC_BASE_URL}${meetingPath}`
+            : undefined;
+
+          return (
           <MeetingCard
-            key={call.id}
+            key={lesson.id}
             icon={type === "ended" ? "/icons/previous.svg" : "/icons/upcoming.svg"}
-            title={call.state?.custom?.description?.substring(0, 25) || "Personal Meeting"}
-            date={call.state?.startsAt ? call.state.startsAt.toLocaleString() : ""}
+            title={lesson.title}
+              subtitle={`${lesson.group.name} (${lesson.group.level.code})`}
+              status={lesson.status}
+              date={`${new Date(lesson.scheduledStart).toLocaleString()} - ${new Date(
+                lesson.scheduledEnd
+              ).toLocaleString()}`}
             isPreviousMeeting={type === "ended"}
-            buttonText={type === "ended" ? "Start" : "Start"}
-            handleClick={() => router.push(`/meeting/${call.id}`)}
-            link={`${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${call.id}`}
+            buttonText={hasCallLink ? "Open Meeting" : "No Link"}
+              hideActions={type === "upcoming" && !hasCallLink}
+              handleClick={() => {
+                if (!hasCallLink) {
+                  toast.info("This lesson has no meeting link yet.");
+                  return;
+                }
+                router.push(meetingPath);
+              }}
+              link={shareLink}
           />
-        ))
+            );
+          })
       ) : (
         <h1>{noCallsMessage}</h1>
       )}

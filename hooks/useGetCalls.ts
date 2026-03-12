@@ -2,13 +2,18 @@ import { useUser } from "@clerk/nextjs";
 import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useEffect, useState } from "react";
 
-export const useGetCalls = () => {
-    const [calls, setCalls] = useState<Call[]>([]);
+export const useGetCalls = ({ enabled = true }: { enabled?: boolean } = {}) => {    const [calls, setCalls] = useState<Call[]>([]);
     const[isLoading,setIsLoading] = useState(false);
     const client = useStreamVideoClient();
     const {user} = useUser();
     
     useEffect(() => {
+        if (!enabled) {
+            setCalls([]);
+            setIsLoading(false);
+            return;
+        }
+
         const loadCalls = async () => {
             if(!client || !user?.id) return;
 
@@ -34,7 +39,7 @@ export const useGetCalls = () => {
         }
 
         loadCalls();
-    }, [client, user?.id]);
+    }, [client, user?.id, enabled]);
 
     const now = new Date();
 

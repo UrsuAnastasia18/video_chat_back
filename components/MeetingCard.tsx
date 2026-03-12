@@ -11,22 +11,28 @@ interface MeetingCardProps {
   title: string;
   date: string;
   icon: string;
+  subtitle?: string;
+  status?: string;
   isPreviousMeeting?: boolean;
   buttonIcon1?: string;
   buttonText?: string;
   handleClick: () => void;
-  link: string;
+  link?: string;
+  hideActions?: boolean;
 }
 
 const MeetingCard = ({
   icon,
   title,
   date,
+  subtitle,
+  status,
   isPreviousMeeting,
   buttonIcon1,
   handleClick,
   link,
   buttonText,
+  hideActions,
 }: MeetingCardProps) => {
   return (
     <section className="flex min-h-[258px] w-full flex-col justify-between rounded-[14px] bg-dark-1 px-5 py-8 xl:max-w-[568px]">
@@ -36,7 +42,13 @@ const MeetingCard = ({
           <div className="flex flex-col gap-2">
             <h1 className="text-2xl font-bold">{title}</h1>
             <p className="text-base font-normal">{date}</p>
+            {subtitle ? <p className="text-sm text-sky-1">{subtitle}</p> : null}
           </div>
+          {status ? (
+            <span className="rounded-full bg-dark-4 px-3 py-1 text-xs font-medium">
+              {status}
+            </span>
+          ) : null}
         </div>
       </article>
       <article className={cn("flex justify-center relative", {})}>
@@ -56,7 +68,7 @@ const MeetingCard = ({
             +5
           </div>
         </div>
-        {!isPreviousMeeting && (
+        {!isPreviousMeeting && !hideActions && (
           <div className="flex gap-2">
             <Button onClick={handleClick} className="rounded bg-blue-1 px-6">
               {buttonIcon1 && (
@@ -64,6 +76,7 @@ const MeetingCard = ({
               )}
               &nbsp; {buttonText}
             </Button>
+            {link ? (
             <Button
               onClick={() => {
                 navigator.clipboard.writeText(link);
@@ -79,6 +92,7 @@ const MeetingCard = ({
               />
               &nbsp; Copy Link
             </Button>
+            ) : null }
           </div>
         )}
       </article>

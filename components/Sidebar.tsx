@@ -6,6 +6,9 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { useUser } from "@clerk/nextjs";
+
+type AppRole = "STUDENT" | "TEACHER_ADMIN";
 
 const GroupsIcon = ({
   className,
@@ -33,6 +36,14 @@ const GroupsIcon = ({
 
 const Sidebar = () => {
   const pathname = usePathname()
+    const { user } = useUser();
+  const role = (user?.publicMetadata?.role as AppRole | undefined) ?? undefined;
+
+  const visibleLinks = sidebarLinks.filter((link) => {
+    if (!link.roles) return true;
+    if (!role) return false;
+    return link.roles.includes(role);
+  });
 
   return (
     <section
@@ -44,8 +55,8 @@ const Sidebar = () => {
     >
       {/* Nav links */}
       <nav className="flex flex-col gap-1 px-3 py-5 flex-1">
-        {sidebarLinks.map((link) => {
-          const isActive =
+        {visibleLinks.map((link) => {
+            const isActive =
             link.route === '/'
               ? pathname === '/'
               : pathname === link.route || pathname.startsWith(link.route + '/')

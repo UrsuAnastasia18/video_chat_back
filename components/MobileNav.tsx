@@ -6,11 +6,21 @@ import { cn } from "@/lib/utils"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useUser } from "@clerk/nextjs";
+
 
 import React from 'react'
+type AppRole = "STUDENT" | "TEACHER_ADMIN";
 
 const MobileNav = () => {
   const pathname = usePathname();
+   const { user } = useUser();
+  const role = (user?.publicMetadata?.role as AppRole | undefined) ?? undefined;
+  const visibleLinks = sidebarLinks.filter((link) => {
+    if (!link.roles) return true;
+    if (!role) return false;
+    return link.roles.includes(role);
+  });
 
   return (
     <section className="w-full max-w-[264px]">
@@ -39,7 +49,7 @@ const MobileNav = () => {
           <div className="flex h-[calc(100vh-72px)] flex-col justify-between overflow-y-auto">
             <SheetClose asChild>
               <section className='flex h-full flex-col gap-6 pt-16 text-amber-950'>
-                {sidebarLinks.map((link) => {
+                {visibleLinks.map((link) => {
                   const isActive =
                   link.route === "/"
                   ? pathname === "/"

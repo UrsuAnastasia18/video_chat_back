@@ -1,3 +1,5 @@
+type AppRole = "STUDENT" | "TEACHER_ADMIN";
+
 //in loc sa creez un array in principal sidebar de fiecare data
 // sa creat aici un file aparte(constants) de unde va fi apelat in sidebar
 export const sidebarLinks = [
@@ -30,6 +32,13 @@ export const sidebarLinks = [
         label: 'My Groups',
         route: '/teacher/groups',
         imgUrl: '/icons/groups.svg',
+        roles: ['TEACHER_ADMIN'] as AppRole[],
+    },
+    {
+        label: 'My Group',
+        route: '/student/group',
+        imgUrl: '/icons/groups.svg',
+        roles: ['STUDENT'] as AppRole[],
     },
 ]
 

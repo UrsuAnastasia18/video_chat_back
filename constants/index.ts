@@ -35,13 +35,36 @@ export const sidebarLinks = [
         roles: ['TEACHER_ADMIN'] as AppRole[],
     },
     {
+        label: 'Books',
+        route: '/teacher/books',
+        imgUrl: '/icons/recordings.svg',
+        roles: ['TEACHER_ADMIN'] as AppRole[],
+    },
+    {
+        label: 'Worksheets',
+        route: '/teacher/worksheets',
+        imgUrl: '/icons/schedule.svg',
+        roles: ['TEACHER_ADMIN'] as AppRole[],
+    },
+    {
         label: 'My Group',
         route: '/student/group',
         imgUrl: '/icons/groups.svg',
         roles: ['STUDENT'] as AppRole[],
     },
+    {
+        label: 'My Books',
+        route: '/student/books',
+        imgUrl: '/icons/recordings.svg',
+        roles: ['STUDENT'] as AppRole[],
+    },
+    {
+        label: 'My Worksheets',
+        route: '/student/worksheets',
+        imgUrl: '/icons/schedule.svg',
+        roles: ['STUDENT'] as AppRole[],
+    },
 ]
-
 export const avatarImages = [
     '/images/avatar-1.jpeg',
     '/images/avatar-2.jpeg',

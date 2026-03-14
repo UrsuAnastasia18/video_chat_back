@@ -207,7 +207,7 @@ model Book {
   author        String?
   publisher     String?
   coverImageUrl String?
-  resourceUrl   String?
+  resourceUrl   String
   isActive      Boolean  @default(true)
   levelId       String
   createdById   String?
@@ -224,6 +224,7 @@ model Worksheet {
   description  String?
   instructions String?
   resourceUrl  String?
+  contentJson  Json?
   maxScore     Int      @default(100)
   passingScore Int?
   isActive     Boolean  @default(true)

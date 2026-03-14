@@ -44,6 +44,129 @@ async function main() {
   });
   console.log(`  ✅ Teacher: ${teacherUser.firstName} ${teacherUser.lastName} (${teacherUser.email})`);
 
+  // ─── Demo Books (same PDF for all levels) ───────────────────
+  const demoPdfUrl = "/manuals/worksheets-grammar.pdf";
+  const demoCoverUrl = "/images/hero-background.png";
+
+  for (const level of levels) {
+    const bookTitle = `English ${level.code} Demo Book`;
+    const existingBook = await prisma.book.findFirst({
+      where: {
+        title: bookTitle,
+        levelId: levelRecords[level.code].id,
+      },
+      select: { id: true },
+    });
+
+    if (existingBook) {
+      await prisma.book.update({
+        where: { id: existingBook.id },
+        data: {
+          description: `Demo PDF manual for ${level.code}`,
+          author: "Hello English Team",
+          resourceUrl: demoPdfUrl,
+          coverImageUrl: demoCoverUrl,
+          isActive: true,
+          createdById: teacherUser.id,
+        },
+      });
+    } else {
+      await prisma.book.create({
+        data: {
+          title: bookTitle,
+          description: `Demo PDF manual for ${level.code}`,
+          author: "Hello English Team",
+          levelId: levelRecords[level.code].id,
+          resourceUrl: demoPdfUrl,
+          coverImageUrl: demoCoverUrl,
+          isActive: true,
+          createdById: teacherUser.id,
+        },
+      });
+    }
+
+    console.log(`  ✅ Book: ${bookTitle}`);
+  }
+
+  // ─── Demo Worksheets (same interactive content for all levels) ───────────
+  const demoWorksheetContent = {
+    title: "Choose the best answer",
+    questions: [
+      {
+        id: "q1",
+        prompt: "Maggie and Carol ______ good friends.",
+        type: "single_choice",
+        options: [
+          { id: "a", label: "am" },
+          { id: "b", label: "are" },
+          { id: "c", label: "is" },
+          { id: "d", label: "isn't" },
+        ],
+        correctOptionId: "b",
+      },
+      {
+        id: "q2",
+        prompt: "He ______ from Romania.",
+        type: "single_choice",
+        options: [
+          { id: "a", label: "are" },
+          { id: "b", label: "is" },
+          { id: "c", label: "am" },
+          { id: "d", label: "be" },
+        ],
+        correctOptionId: "b",
+      },
+      {
+        id: "q3",
+        prompt: "They ______ to school every day.",
+        type: "single_choice",
+        options: [
+          { id: "a", label: "goes" },
+          { id: "b", label: "going" },
+          { id: "c", label: "go" },
+          { id: "d", label: "gone" },
+        ],
+        correctOptionId: "c",
+      },
+    ],
+  };
+
+  for (const level of levels) {
+    const worksheetTitle = `${level.code} - Choose the best answer`;
+    const existingWorksheet = await prisma.worksheet.findFirst({
+      where: {
+        title: worksheetTitle,
+        levelId: levelRecords[level.code].id,
+      },
+      select: { id: true },
+    });
+
+    const worksheetData = {
+      title: worksheetTitle,
+      description: `Demo worksheet for ${level.code}`,
+      instructions: "Choose one correct answer for each question and submit.",
+      levelId: levelRecords[level.code].id,
+      contentJson: demoWorksheetContent,
+      maxScore: demoWorksheetContent.questions.length,
+      passingScore: 2,
+      isActive: true,
+      createdById: teacherUser.id,
+    };
+
+    if (existingWorksheet) {
+      await prisma.worksheet.update({
+        where: { id: existingWorksheet.id },
+        data: worksheetData,
+      });
+    } else {
+      await prisma.worksheet.create({
+        data: worksheetData,
+      });
+    }
+
+    console.log(`  ✅ Worksheet: ${worksheetTitle}`);
+  }
+  
   // ─── Demo Students ───────────────────────────────────────────
   const studentsData = [
     { clerkUserId: "demo_student_1_clerk", email: "maria@demo.com", firstName: "Maria", lastName: "Popescu", levelCode: "A1" },

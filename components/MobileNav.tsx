@@ -1,6 +1,6 @@
 "use client"
 import{
-    Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger} from "@/components/ui/sheet"
+    Sheet, SheetClose, SheetContent, SheetTrigger} from "@/components/ui/sheet"
 import { sidebarLinks } from "@/constants"
 import { cn } from "@/lib/utils"
 import Image from "next/image"

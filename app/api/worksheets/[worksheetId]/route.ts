@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireTeacher } from "@/lib/auth";
-import { validateWorksheetContent } from "@/lib/worksheet-content";
+import { requireCurrentUser, requireTeacher } from "@/lib/auth";
 
 type RouteContext = {
   params: Promise<{ worksheetId: string }>;
@@ -11,10 +9,56 @@ type RouteContext = {
 async function getWorksheet(worksheetId: string) {
   return prisma.worksheet.findUnique({
     where: { id: worksheetId },
-    select: { id: true, maxScore: true },
+    select: { id: true, isActive: true, maxScore: true },
   });
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+   GET /api/worksheets/[worksheetId]
+   Accesibil de oricine autentificat (elev sau profesor).
+   Elevii văd doar fișele active; profesorii văd și cele inactive.
+────────────────────────────────────────────────────────────────────────── */
+export async function GET(_request: NextRequest, context: RouteContext) {
+  let user;
+  try {
+    user = await requireCurrentUser();
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { worksheetId } = await context.params;
+
+  const worksheet = await prisma.worksheet.findUnique({
+    where: { id: worksheetId },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      instructions: true,
+      isActive: true,
+      maxScore: true,
+      passingScore: true,
+      resourceUrl: true,
+      level: { select: { id: true, code: true, title: true } },
+    },
+  });
+
+  if (!worksheet) {
+    return NextResponse.json({ error: "Worksheet not found" }, { status: 404 });
+  }
+
+  if (!worksheet.isActive && user.role === "STUDENT") {
+    return NextResponse.json({ error: "Worksheet not found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ worksheet });
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   PATCH /api/worksheets/[worksheetId]
+   Doar profesori.
+   Variantă compatibilă cu schema actuală fără contentJson.
+────────────────────────────────────────────────────────────────────────── */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     await requireTeacher();
@@ -27,7 +71,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const existing = await getWorksheet(worksheetId);
 
     if (!existing) {
-      return NextResponse.json({ error: "Worksheet not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Worksheet not found" },
+        { status: 404 }
+      );
     }
 
     const body = (await request.json()) as {
@@ -35,13 +82,22 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       description?: unknown;
       instructions?: unknown;
       levelId?: unknown;
-      contentJson?: unknown;
       isActive?: unknown;
       passingScore?: unknown;
+      maxScore?: unknown;
+      resourceUrl?: unknown;
     };
 
-    const updateData: Prisma.WorksheetUncheckedUpdateInput = {};
-    let maxScoreForValidation: number | null = null;
+    const updateData: {
+      title?: string;
+      description?: string | null;
+      instructions?: string | null;
+      levelId?: string;
+      isActive?: boolean;
+      maxScore?: number;
+      passingScore?: number | null;
+      resourceUrl?: string | null;
+    } = {};
 
     if (body.title !== undefined) {
       if (typeof body.title !== "string" || body.title.trim().length === 0) {
@@ -60,11 +116,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           { status: 400 }
         );
       }
-
       updateData.description =
         body.description === null || body.description === ""
           ? null
-          : body.description.trim();
+          : (body.description as string).trim();
     }
 
     if (body.instructions !== undefined) {
@@ -74,11 +129,23 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           { status: 400 }
         );
       }
-
       updateData.instructions =
         body.instructions === null || body.instructions === ""
           ? null
-          : body.instructions.trim();
+          : (body.instructions as string).trim();
+    }
+
+    if (body.resourceUrl !== undefined) {
+      if (body.resourceUrl !== null && typeof body.resourceUrl !== "string") {
+        return NextResponse.json(
+          { error: "resourceUrl must be a string or null" },
+          { status: 400 }
+        );
+      }
+      updateData.resourceUrl =
+        body.resourceUrl === null || body.resourceUrl === ""
+          ? null
+          : (body.resourceUrl as string).trim();
     }
 
     if (body.levelId !== undefined) {
@@ -89,10 +156,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         );
       }
 
-      const trimmedLevelId = body.levelId.trim();
-
       const level = await prisma.englishLevel.findUnique({
-        where: { id: trimmedLevelId },
+        where: { id: body.levelId.trim() },
         select: { id: true },
       });
 
@@ -100,27 +165,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         return NextResponse.json({ error: "Invalid levelId" }, { status: 400 });
       }
 
-      updateData.levelId = trimmedLevelId;
-    }
-
-    if (body.contentJson !== undefined) {
-      if (body.contentJson === null) {
-        updateData.contentJson = Prisma.JsonNull;
-        updateData.maxScore = 0;
-        maxScoreForValidation = 0;
-      } else {
-        const validation = validateWorksheetContent(body.contentJson);
-
-        if (!validation.valid) {
-          return NextResponse.json({ error: validation.error }, { status: 400 });
-        }
-
-        const questions = (body.contentJson as { questions: unknown[] }).questions;
-
-        updateData.contentJson = body.contentJson as Prisma.InputJsonValue;
-        updateData.maxScore = questions.length;
-        maxScoreForValidation = questions.length;
-      }
+      updateData.levelId = body.levelId.trim();
     }
 
     if (body.isActive !== undefined) {
@@ -130,8 +175,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           { status: 400 }
         );
       }
-
       updateData.isActive = body.isActive;
+    }
+
+    if (body.maxScore !== undefined) {
+      if (
+        typeof body.maxScore !== "number" ||
+        !Number.isInteger(body.maxScore) ||
+        body.maxScore < 0
+      ) {
+        return NextResponse.json(
+          { error: "maxScore must be a non-negative integer" },
+          { status: 400 }
+        );
+      }
+      updateData.maxScore = body.maxScore;
     }
 
     if (body.passingScore !== undefined) {
@@ -141,11 +199,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         typeof body.passingScore === "number" &&
         Number.isInteger(body.passingScore)
       ) {
-        const resolvedMaxScore = maxScoreForValidation ?? existing.maxScore ?? 0;
+        const effectiveMaxScore =
+          updateData.maxScore ?? existing.maxScore ?? 0;
 
-        if (body.passingScore < 0 || body.passingScore > resolvedMaxScore) {
+        if (
+          body.passingScore < 0 ||
+          body.passingScore > effectiveMaxScore
+        ) {
           return NextResponse.json(
-            { error: `passingScore must be between 0 and ${resolvedMaxScore}` },
+            {
+              error: `passingScore must be between 0 and ${effectiveMaxScore}`,
+            },
             { status: 400 }
           );
         }
@@ -167,28 +231,29 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         title: true,
         description: true,
         instructions: true,
-        contentJson: true,
         isActive: true,
         maxScore: true,
         passingScore: true,
-        level: {
-          select: {
-            id: true,
-            code: true,
-            title: true,
-          },
-        },
+        resourceUrl: true,
+        level: { select: { id: true, code: true, title: true } },
       },
     });
 
     return NextResponse.json({ worksheet });
   } catch (error) {
     console.error("PATCH /api/worksheets/[worksheetId] error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
-export async function DELETE(_request: NextRequest, routeContext: RouteContext) {
+/* ──────────────────────────────────────────────────────────────────────────
+   DELETE /api/worksheets/[worksheetId]
+   Soft-delete (isActive = false). Doar profesori.
+────────────────────────────────────────────────────────────────────────── */
+export async function DELETE(_request: NextRequest, context: RouteContext) {
   try {
     await requireTeacher();
   } catch {
@@ -196,11 +261,14 @@ export async function DELETE(_request: NextRequest, routeContext: RouteContext) 
   }
 
   try {
-    const { worksheetId } = await routeContext.params;
+    const { worksheetId } = await context.params;
     const existing = await getWorksheet(worksheetId);
 
     if (!existing) {
-      return NextResponse.json({ error: "Worksheet not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Worksheet not found" },
+        { status: 404 }
+      );
     }
 
     await prisma.worksheet.update({
@@ -211,6 +279,9 @@ export async function DELETE(_request: NextRequest, routeContext: RouteContext) 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/worksheets/[worksheetId] error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

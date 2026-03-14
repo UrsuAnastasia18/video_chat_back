@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireTeacher } from "@/lib/auth";
-import { validateWorksheetContent } from "@/lib/worksheet-content";
+import { requireCurrentUser, requireTeacher } from "@/lib/auth";
 
 function parseBooleanFilter(value: string | null): boolean | undefined {
   if (value === null) return undefined;
@@ -10,11 +9,18 @@ function parseBooleanFilter(value: string | null): boolean | undefined {
   return undefined;
 }
 
+/**
+ * GET /api/worksheets
+ * Accesibil oricui autentificat (elevi + profesori).
+ * Elevii văd doar fișele active de la nivelul lor curent.
+ * Profesorii văd tot și pot filtra manual.
+ */
 export async function GET(request: NextRequest) {
+  let user;
   try {
-    await requireTeacher();
+    user = await requireCurrentUser();
   } catch {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -30,10 +36,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const isActiveFilter: boolean | undefined =
+      user.role === "STUDENT" ? true : isActive;
+
+    let studentLevelId: string | undefined;
+    if (user.role === "STUDENT") {
+      if (!user.studentProfile?.currentLevelId) {
+        return NextResponse.json({ worksheets: [] });
+      }
+      studentLevelId = user.studentProfile.currentLevelId;
+    }
+
     const worksheets = await prisma.worksheet.findMany({
       where: {
-        ...(typeof levelId === "string" && levelId.trim() ? { levelId } : {}),
-        ...(isActive !== undefined ? { isActive } : {}),
+        ...(user.role === "STUDENT"
+          ? { levelId: studentLevelId }
+          : typeof levelId === "string" && levelId.trim()
+            ? { levelId: levelId.trim() }
+            : {}),
+        ...(isActiveFilter !== undefined ? { isActive: isActiveFilter } : {}),
       },
       orderBy: { createdAt: "desc" },
       select: {
@@ -41,16 +62,13 @@ export async function GET(request: NextRequest) {
         title: true,
         description: true,
         instructions: true,
-        contentJson: true,
+        resourceUrl: true,
         isActive: true,
         maxScore: true,
         passingScore: true,
+        createdAt: true,
         level: {
-          select: {
-            id: true,
-            code: true,
-            title: true,
-          },
+          select: { id: true, code: true, title: true },
         },
       },
     });
@@ -58,10 +76,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ worksheets });
   } catch (error) {
     console.error("GET /api/worksheets error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
+/**
+ * POST /api/worksheets
+ * Doar profesori.
+ *
+ * Variantă compatibilă cu schema actuală:
+ * - fără contentJson
+ * - worksheet-ul este definit prin metadata + resourceUrl + scoruri
+ */
 export async function POST(request: NextRequest) {
   let user;
   try {
@@ -76,8 +105,9 @@ export async function POST(request: NextRequest) {
       description?: unknown;
       instructions?: unknown;
       levelId?: unknown;
-      contentJson?: unknown;
       passingScore?: unknown;
+      maxScore?: unknown;
+      resourceUrl?: unknown;
     };
 
     const title = typeof body.title === "string" ? body.title.trim() : "";
@@ -87,24 +117,64 @@ export async function POST(request: NextRequest) {
       typeof body.description === "string" && body.description.trim().length > 0
         ? body.description.trim()
         : null;
+
     const instructions =
       typeof body.instructions === "string" && body.instructions.trim().length > 0
         ? body.instructions.trim()
         : null;
 
+    const resourceUrl =
+      typeof body.resourceUrl === "string" && body.resourceUrl.trim().length > 0
+        ? body.resourceUrl.trim()
+        : null;
+
     if (!title) {
-      return NextResponse.json({ error: "title is required" }, { status: 400 });
-    }
-    if (!levelId) {
-      return NextResponse.json({ error: "levelId is required" }, { status: 400 });
-    }
-    if (body.contentJson === undefined || body.contentJson === null) {
-      return NextResponse.json({ error: "contentJson is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "title is required" },
+        { status: 400 }
+      );
     }
 
-    const validation = validateWorksheetContent(body.contentJson);
-    if (!validation.valid) {
-      return NextResponse.json({ error: validation.error }, { status: 400 });
+    if (!levelId) {
+      return NextResponse.json(
+        { error: "levelId is required" },
+        { status: 400 }
+      );
+    }
+
+    if (
+      typeof body.maxScore !== "number" ||
+      !Number.isInteger(body.maxScore) ||
+      body.maxScore < 0
+    ) {
+      return NextResponse.json(
+        { error: "maxScore must be a non-negative integer" },
+        { status: 400 }
+      );
+    }
+
+    const maxScore = body.maxScore;
+
+    let passingScore: number | null = null;
+    if (body.passingScore !== undefined && body.passingScore !== null) {
+      if (
+        typeof body.passingScore !== "number" ||
+        !Number.isInteger(body.passingScore)
+      ) {
+        return NextResponse.json(
+          { error: "passingScore must be an integer or null" },
+          { status: 400 }
+        );
+      }
+
+      if (body.passingScore < 0 || body.passingScore > maxScore) {
+        return NextResponse.json(
+          { error: `passingScore must be between 0 and ${maxScore}` },
+          { status: 400 }
+        );
+      }
+
+      passingScore = body.passingScore;
     }
 
     const level = await prisma.englishLevel.findUnique({
@@ -113,27 +183,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!level) {
-      return NextResponse.json({ error: "Invalid levelId" }, { status: 400 });
-    }
-
-    const questions = (body.contentJson as { questions: unknown[] }).questions;
-    const maxScore = questions.length;
-
-    let passingScore: number | null = null;
-    if (body.passingScore !== undefined && body.passingScore !== null) {
-      if (typeof body.passingScore !== "number" || !Number.isInteger(body.passingScore)) {
-        return NextResponse.json(
-          { error: "passingScore must be an integer or null" },
-          { status: 400 }
-        );
-      }
-      if (body.passingScore < 0 || body.passingScore > maxScore) {
-        return NextResponse.json(
-          { error: `passingScore must be between 0 and ${maxScore}` },
-          { status: 400 }
-        );
-      }
-      passingScore = body.passingScore;
+      return NextResponse.json(
+        { error: "Invalid levelId" },
+        { status: 400 }
+      );
     }
 
     const worksheet = await prisma.worksheet.create({
@@ -141,8 +194,8 @@ export async function POST(request: NextRequest) {
         title,
         description,
         instructions,
+        resourceUrl,
         levelId,
-        contentJson: body.contentJson,
         maxScore,
         passingScore,
         isActive: true,
@@ -153,23 +206,21 @@ export async function POST(request: NextRequest) {
         title: true,
         description: true,
         instructions: true,
-        contentJson: true,
+        resourceUrl: true,
         isActive: true,
         maxScore: true,
         passingScore: true,
-        level: {
-          select: {
-            id: true,
-            code: true,
-            title: true,
-          },
-        },
+        createdAt: true,
+        level: { select: { id: true, code: true, title: true } },
       },
     });
 
     return NextResponse.json({ worksheet }, { status: 201 });
   } catch (error) {
     console.error("POST /api/worksheets error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

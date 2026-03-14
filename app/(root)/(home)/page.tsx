@@ -1,28 +1,85 @@
 import MeetingTypeList from '@/components/MeetingTypeList';
-import React from 'react'
 
 const Home = () => {
   const now = new Date();
-  const time = now.toLocaleTimeString('en-RO', { hour: '2-digit', minute: '2-digit' });
-  const date = (new Intl.DateTimeFormat('en-RO', { dateStyle: 'full' })).format(now);
+  const time = now.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+  const date = new Intl.DateTimeFormat('ro-RO', { dateStyle: 'full' }).format(now);
 
   return (
-    <section className="flex size-full flex-col gap-10 text-white">
-      <div className="h-[300px] w-full rounded-[20px] bg-(image:--bg-hero) bg-hero bg-cover">
-        <div className="flex h-full flex-col justify-between max-md:px-5 max-md:py-8 lg:p-11">
-          <h2 className="glassmorphism max-w-[270px] rounded py-2 text-center text-base font-normal">Upcoming Meeting at 12.30 PM</h2>
-          <div className="flex flex-col gap-2">
-            <h1 className="text-4xl font-extrabold lg:text-7xl">
+    <section className="flex size-full flex-col gap-7" style={{ color: '#1e293b' }}>
+
+      {/* ── Hero banner ── */}
+      <div
+        className="relative overflow-hidden rounded-2xl"
+        style={{
+          background: 'linear-gradient(135deg, #1e2d40 0%, #243650 55%, #1a3a5c 100%)',
+          minHeight: '200px',
+        }}
+      >
+        {/* subtle grid texture */}
+        <div
+          className="absolute inset-0 opacity-[0.035]"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 48px),' +
+              'repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 48px)',
+          }}
+        />
+        {/* glow */}
+        <div
+          className="absolute -right-20 -top-20 h-72 w-72 rounded-full opacity-[0.08]"
+          style={{ background: 'radial-gradient(circle, #4f8ef7 0%, transparent 70%)' }}
+        />
+        <div
+          className="absolute bottom-0 left-1/3 h-40 w-40 rounded-full opacity-[0.05]"
+          style={{ background: 'radial-gradient(circle, #818cf8 0%, transparent 70%)' }}
+        />
+
+        <div className="relative flex h-full flex-col justify-between px-8 py-8 lg:px-12 lg:py-10">
+          {/* pill */}
+          <div>
+            <div
+              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5"
+              style={{
+                background: 'rgba(255,255,255,0.07)',
+                border: '1px solid rgba(255,255,255,0.12)',
+              }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#10b981' }} />
+              <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                Hello English Platform
+              </span>
+            </div>
+          </div>
+
+          {/* clock */}
+          <div className="mt-6">
+            <p
+              className="font-bold leading-none tabular-nums"
+              style={{ fontSize: '56px', color: '#ffffff', letterSpacing: '-2px' }}
+            >
               {time}
-            </h1>
-            <p className="text-lg font-medium text-sky-1 lg:text-2xl"> {date}</p>
+            </p>
+            <p
+              className="mt-2 text-sm capitalize"
+              style={{ color: 'rgba(255,255,255,0.4)', letterSpacing: '0.03em' }}
+            >
+              {date}
+            </p>
           </div>
         </div>
       </div>
 
-      <MeetingTypeList />
-    </section>
-  )
-}
+      {/* ── Quick actions ── */}
+      <div>
+        <p className="mb-4 text-[11px] font-bold uppercase tracking-widest" style={{ color: '#94a3b8' }}>
+          Acțiuni rapide
+        </p>
+        <MeetingTypeList />
+      </div>
 
-export default Home
+    </section>
+  );
+};
+
+export default Home;

@@ -47,14 +47,14 @@ const Sidebar = () => {
 
   return (
     <section
-      className="sticky left-0 top-0 flex h-screen w-fit flex-col pt-[72px] max-sm:hidden lg:w-60"
+      className="fixed left-0 top-[57px] z-40 hidden h-[calc(100vh-57px)] w-[88px] flex-col overflow-y-auto sm:flex lg:w-60"
       style={{
         background: '#1e2d40',
         borderRight: '1px solid rgba(255,255,255,0.07)',
       }}
     >
       {/* Nav links */}
-      <nav className="flex flex-col gap-1 px-3 py-5 flex-1">
+        <nav className="flex flex-1 flex-col gap-1 px-3 py-5">
         {visibleLinks.map((link) => {
             const isActive =
             link.route === '/'

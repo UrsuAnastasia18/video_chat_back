@@ -28,6 +28,16 @@ interface LessonItem {
   };
 }
 
+type RecordingPersistPayload = {
+  streamRecordingId: string;
+  streamCallId: string;
+  recordingUrl: string;
+  filename: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  sessionId: string | null;
+};
+
 const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
   const { user } = useUser();
   const { callRecordings, isLoading: recordingsLoading } = useGetCalls({
@@ -53,8 +63,36 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
           .filter((c) => c.recordings.length > 0)
           .flatMap((c) => c.recordings);
 
+        const persistPayload: RecordingPersistPayload[] = [];
+        callData.forEach((callResult, index) => {
+          const streamCallId = callRecordings[index]?.id;
+          if (!streamCallId) return;
+
+          callResult.recordings.forEach((recording) => {
+            if (!recording.url || !recording.session_id || !recording.filename) return;
+
+            persistPayload.push({
+              streamRecordingId: `${recording.session_id}:${recording.filename}`,
+              streamCallId,
+              recordingUrl: recording.url,
+              filename: recording.filename ?? null,
+              startTime: recording.start_time ?? null,
+              endTime: recording.end_time ?? null,
+              sessionId: recording.session_id ?? null,
+            });
+          });
+        });
+
         setRecordings(recs);
-      } catch  {
+
+        if (persistPayload.length > 0) {
+          void fetch("/api/recordings/persist", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ recordings: persistPayload }),
+          });
+        }
+      } catch {
         toast("Try again");
       }
     };
@@ -90,11 +128,11 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
   const noCallsMessage = useMemo(() => {
     switch (type) {
       case "ended":
-       return "No previous lessons";
+        return "No previous lessons";
       case "recordings":
         return "No recordings";
       case "upcoming":
-        return "No upcoming lessons";
+        return "No upcoming or in-progress lessons";
     }
   }, [type]);
 
@@ -112,6 +150,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
               icon="/icons/recording.svg"
               title={rec.filename?.substring(0, 20) || "Recording"}
               date={new Date(rec.start_time).toLocaleString()}
+              variant="banner"
               isPreviousMeeting={false}
               buttonIcon1="/icons/play.svg"
               buttonText="Play"
@@ -125,47 +164,91 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
       </div>
     );
   }
-   // ✅ CALLS render (Call)
+
   return (
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
       {lessons.length > 0 ? (
-        lessons.map((lesson) => {
-          const hasCallLink = !!lesson.streamCallId;
-          const meetingPath = hasCallLink ? `/meeting/${lesson.streamCallId}` : "";
-          const shareLink = hasCallLink
-            ? `${process.env.NEXT_PUBLIC_BASE_URL}${meetingPath}`
-            : undefined;
+        (() => {
+          const now = new Date();
+          const inProgressLessons = lessons.filter((lesson) => {
+            const scheduledStart = new Date(lesson.scheduledStart);
+            const scheduledEnd = new Date(lesson.scheduledEnd);
+            return scheduledStart <= now && scheduledEnd > now;
+          });
+          const futureLessons = lessons.filter((lesson) => {
+            const scheduledStart = new Date(lesson.scheduledStart);
+            return scheduledStart > now;
+          });
+          const renderLessonCard = (lesson: LessonItem, forceLive: boolean) => {
+            const scheduledStart = new Date(lesson.scheduledStart);
+            const scheduledEnd = new Date(lesson.scheduledEnd);
+            const hasCallLink = !!lesson.streamCallId;
+            const meetingPath = hasCallLink ? `/meeting/${lesson.streamCallId}` : "";
+            const shareLink = hasCallLink
+              ? `${process.env.NEXT_PUBLIC_BASE_URL}${meetingPath}`
+              : undefined;
+
+            return (
+              <MeetingCard
+                key={lesson.id}
+                icon={type === "ended" ? "/icons/previous.svg" : "/icons/upcoming.svg"}
+                title={lesson.title}
+                subtitle={`${lesson.group.name} (${lesson.group.level.code})`}
+                status={forceLive ? "LIVE NOW" : lesson.status}
+                variant="banner"
+                date={`${scheduledStart.toLocaleString()} - ${scheduledEnd.toLocaleString()}`}
+                isPreviousMeeting={type === "ended"}
+                buttonText="Open Meeting"
+                hideActions={false}
+                primaryDisabled={!hasCallLink}
+                emptyStateText={!hasCallLink ? "No call linked" : undefined}
+                handleClick={() => {
+                  if (!hasCallLink) {
+                    return;
+                  }
+                  router.push(meetingPath);
+                }}
+                link={shareLink}
+                secondaryButtonText={isTeacher ? "Open Lesson" : undefined}
+                onSecondaryClick={
+                  isTeacher
+                    ? () => router.push(`/teacher/lessons/${lesson.id}`)
+                    : undefined
+                }
+              />
+            );
+          };
+
+          if (type !== "upcoming") {
+            return lessons.map((lesson) => renderLessonCard(lesson, false));
+          }
 
           return (
-          <MeetingCard
-            key={lesson.id}
-            icon={type === "ended" ? "/icons/previous.svg" : "/icons/upcoming.svg"}
-            title={lesson.title}
-              subtitle={`${lesson.group.name} (${lesson.group.level.code})`}
-              status={lesson.status}
-              date={`${new Date(lesson.scheduledStart).toLocaleString()} - ${new Date(
-                lesson.scheduledEnd
-              ).toLocaleString()}`}
-            isPreviousMeeting={type === "ended"}
-            buttonText={hasCallLink ? "Open Meeting" : "No Link"}
-              hideActions={type === "upcoming" && !hasCallLink}
-              handleClick={() => {
-                if (!hasCallLink) {
-                  toast.info("This lesson has no meeting link yet.");
-                  return;
-                }
-                router.push(meetingPath);
-              }}
-              link={shareLink}
-              secondaryButtonText={isTeacher ? "Grade Students" : undefined}
-              onSecondaryClick={
-                isTeacher
-                  ? () => router.push(`/teacher/lessons/${lesson.id}`)
-                  : undefined
-              }
-          />
-            );
-          })
+            <div className="col-span-full flex flex-col gap-5">
+              {inProgressLessons.length > 0 ? (
+                <div>
+                  <p className="mb-2 text-xs font-bold uppercase tracking-widest text-emerald-700">
+                    In progress now
+                  </p>
+                  <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+                    {inProgressLessons.map((lesson) => renderLessonCard(lesson, true))}
+                  </div>
+                </div>
+              ) : null}
+
+              {futureLessons.length > 0 ? (
+                <div>
+                  <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
+                    Upcoming
+                  </p>
+                  <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+                    {futureLessons.map((lesson) => renderLessonCard(lesson, false))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          );
+        })()
       ) : (
         <h1>{noCallsMessage}</h1>
       )}

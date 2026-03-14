@@ -41,7 +41,7 @@
   /* destructive / remove */
 
   /* ── Content area ── */
-  --color-content-bg: #f4f6f9;
+  --color-content-bg: #fef3c7;
   /* page background */
   --color-content-card: #ffffff;
   /* card surface */
@@ -80,7 +80,7 @@
 
 :root {
   --radius: 0.75rem;
-  --background: #f4f6f9;
+  --background: #fef3c7;
   --foreground: #1e293b;
 }
 
@@ -92,7 +92,7 @@
 
   body {
     font-family: 'DM Sans', sans-serif;
-    background-color: #f4f6f9;
+    background-color: var(--background);
     color: #1e293b;
     -webkit-font-smoothing: antialiased;
   }

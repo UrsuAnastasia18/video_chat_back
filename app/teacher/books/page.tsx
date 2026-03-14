@@ -35,6 +35,16 @@ const inputStyle = {
   fontSize: "0.875rem", outline: "none", width: "100%", transition: "all 0.15s",
 };
 
+const premiumSurfaceStyle = {
+  background: "linear-gradient(135deg, #1e2d40 0%, #243650 55%, #1a3a5c 100%)",
+};
+
+const panelStyle = {
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
+  boxShadow: "0 10px 26px rgba(30,45,64,0.08)",
+};
+
 export default function TeacherBooksPage() {
   const [levels, setLevels] = useState<Level[]>([]);
   const [books, setBooks] = useState<Book[]>([]);
@@ -155,21 +165,40 @@ export default function TeacherBooksPage() {
   return (
     <section className="flex size-full flex-col gap-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-[28px] font-bold tracking-tight" style={{ color: "#1e293b" }}>Books</h1>
-          <p className="mt-1 text-sm" style={{ color: "#64748b" }}>Manage PDF books by English level.</p>
+      <div className="relative overflow-hidden rounded-2xl px-6 py-6 text-white" style={premiumSurfaceStyle}>
+        <div
+          className="absolute inset-0 opacity-[0.035]"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 48px)," +
+              "repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 48px)",
+          }}
+        />
+        <div
+          className="absolute -right-20 -top-20 h-56 w-56 rounded-full opacity-[0.08]"
+          style={{ background: "radial-gradient(circle, #4f8ef7 0%, transparent 70%)" }}
+        />
+        <div
+          className="absolute -bottom-10 left-1/3 h-36 w-36 rounded-full opacity-[0.05]"
+          style={{ background: "radial-gradient(circle, #818cf8 0%, transparent 70%)" }}
+        />
+
+        <div className="relative z-10 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-[28px] font-bold tracking-tight">Books</h1>
+            <p className="mt-1 text-sm text-white/70">Manage PDF books by English level.</p>
+          </div>
+          <button
+            onClick={() => { resetForm(); setFormOpen(true); }}
+            className="flex shrink-0 items-center gap-2 rounded-xl bg-blue-1 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95"
+            style={{ boxShadow: "0 4px 14px rgba(79,142,247,0.3)" }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Add Book
+          </button>
         </div>
-        <button
-          onClick={() => { resetForm(); setFormOpen(true); }}
-          className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 hrink-0"
-          style={{ background: "#4f8ef7", boxShadow: "0 4px 14px rgba(79,142,247,0.3)" }}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          Add Book
-        </button>
       </div>
 
       {/* Feedback */}
@@ -192,7 +221,7 @@ export default function TeacherBooksPage() {
 
       {/* Add / Edit form */}
       {formOpen && (
-        <div className="rounded-2xl p-6" style={{ background: "#ffffff", border: "1px solid #e2e8f0", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+        <div className="rounded-2xl p-6" style={panelStyle}>
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-lg font-bold" style={{ color: "#1e293b" }}>
               {editingBookId ? "Edit Book" : "Add New Book"}
@@ -295,9 +324,9 @@ export default function TeacherBooksPage() {
       )}
 
       {/* Books list */}
-      <div className="rounded-2xl" style={{ background: "#ffffff", border: "1px solid #e2e8f0", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+      <div className="overflow-hidden rounded-2xl" style={panelStyle}>
         {/* Filters header */}
-        <div className="flex flex-wrap items-center gap-3 px-5 py-4" style={{ borderBottom: "1px solid #f1f5f9" }}>
+        <div className="flex flex-wrap items-center gap-3 bg-slate-50/80 px-5 py-4" style={{ borderBottom: "1px solid #e2e8f0" }}>
           <h2 className="mr-auto text-base font-bold" style={{ color: "#1e293b" }}>Library</h2>
 
           <div className="relative">

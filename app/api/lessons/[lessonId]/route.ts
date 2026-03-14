@@ -132,6 +132,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       scheduledStart?: unknown;
       scheduledEnd?: unknown;
       status?: unknown;
+      streamCallId?: unknown;
     };
 
     const updateData: {
@@ -140,6 +141,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       scheduledStart?: Date;
       scheduledEnd?: Date;
       status?: LessonStatus;
+      streamCallId?: string | null;
     } = {};
 
     if (body.title !== undefined) {
@@ -173,6 +175,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         return NextResponse.json({ error: "Invalid status" }, { status: 400 });
       }
       updateData.status = body.status as LessonStatus;
+    }
+
+    if (body.streamCallId !== undefined) {
+      if (
+        body.streamCallId !== null &&
+        (typeof body.streamCallId !== "string" || body.streamCallId.trim().length === 0)
+      ) {
+        return NextResponse.json(
+          { error: "streamCallId must be a non-empty string or null" },
+          { status: 400 }
+        );
+      }
+
+      updateData.streamCallId =
+        body.streamCallId === null ? null : (body.streamCallId as string).trim();
     }
 
     let nextStart = lesson.scheduledStart;
@@ -238,6 +255,16 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json({ lesson: updatedLesson });
   } catch (error) {
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      (error as { code: string }).code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "This call is already linked to another lesson" },
+        { status: 409 }
+      );
+    }
     console.error("PATCH /api/lessons/[lessonId] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

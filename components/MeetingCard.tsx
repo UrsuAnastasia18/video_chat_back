@@ -19,6 +19,8 @@ interface MeetingCardProps {
   handleClick: () => void;
   link?: string;
   hideActions?: boolean;
+  secondaryButtonText?: string;
+  onSecondaryClick?: () => void;
 }
 
 const MeetingCard = ({
@@ -33,6 +35,8 @@ const MeetingCard = ({
   link,
   buttonText,
   hideActions,
+  secondaryButtonText,
+  onSecondaryClick,
 }: MeetingCardProps) => {
   return (
     <section className="flex min-h-[258px] w-full flex-col justify-between rounded-[14px] bg-dark-1 px-5 py-8 xl:max-w-[568px]">
@@ -68,14 +72,16 @@ const MeetingCard = ({
             +5
           </div>
         </div>
-        {!isPreviousMeeting && !hideActions && (
+        {!hideActions && (!isPreviousMeeting || secondaryButtonText) && (
           <div className="flex gap-2">
+           {!isPreviousMeeting ? (
             <Button onClick={handleClick} className="rounded bg-blue-1 px-6">
               {buttonIcon1 && (
                 <Image src={buttonIcon1} alt="feature" width={20} height={20} />
               )}
               &nbsp; {buttonText}
             </Button>
+           ) : null}
             {link ? (
             <Button
               onClick={() => {
@@ -93,6 +99,11 @@ const MeetingCard = ({
               &nbsp; Copy Link
             </Button>
             ) : null }
+             {secondaryButtonText && onSecondaryClick ? (
+              <Button onClick={onSecondaryClick} className="rounded bg-blue-1 px-6">
+                {secondaryButtonText}
+              </Button>
+            ) : null}
           </div>
         )}
       </article>

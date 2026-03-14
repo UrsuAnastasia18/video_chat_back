@@ -7,6 +7,7 @@ import { CallRecording } from "@stream-io/video-react-sdk";
 import MeetingCard from "./MeetingCard";
 import { Loader } from "./Loader";
 import { toast } from "sonner";
+import { useUser } from "@clerk/nextjs";
 
 interface LessonItem {
   id: string;
@@ -28,13 +29,16 @@ interface LessonItem {
 }
 
 const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
+  const { user } = useUser();
   const { callRecordings, isLoading: recordingsLoading } = useGetCalls({
     enabled: type === "recordings",
   });
   const router = useRouter();
   const [recordings, setRecordings] = useState<CallRecording[]>([]);
-    const [lessons, setLessons] = useState<LessonItem[]>([]);
+  const [lessons, setLessons] = useState<LessonItem[]>([]);
   const [isLessonsLoading, setIsLessonsLoading] = useState(false);
+  const role = user?.publicMetadata?.role;
+  const isTeacher = role === "TEACHER_ADMIN";
 
   useEffect(() => {
     if (type !== "recordings") return;
@@ -153,6 +157,12 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
                 router.push(meetingPath);
               }}
               link={shareLink}
+              secondaryButtonText={isTeacher ? "Grade Students" : undefined}
+              onSecondaryClick={
+                isTeacher
+                  ? () => router.push(`/teacher/lessons/${lesson.id}`)
+                  : undefined
+              }
           />
             );
           })

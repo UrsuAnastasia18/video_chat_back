@@ -47,6 +47,12 @@ export const sidebarLinks = [
         roles: ['TEACHER_ADMIN'] as AppRole[],
     },
     {
+        label: 'Grades',
+        route: '/teacher/grades',
+        imgUrl: '/icons/checked.svg',
+        roles: ['TEACHER_ADMIN'] as AppRole[],
+    },
+    {
         label: 'My Group',
         route: '/student/group',
         imgUrl: '/icons/groups.svg',
@@ -64,7 +70,14 @@ export const sidebarLinks = [
         imgUrl: '/icons/schedule.svg',
         roles: ['STUDENT'] as AppRole[],
     },
+    {
+        label: 'My Grades',
+        route: '/student/grades',
+        imgUrl: '/icons/checked.svg',
+        roles: ['STUDENT'] as AppRole[],
+    },
 ]
+
 export const avatarImages = [
     '/images/avatar-1.jpeg',
     '/images/avatar-2.jpeg',

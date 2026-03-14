@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth";
 import {
@@ -102,48 +103,75 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     }
 
-    const lastSubmission = await prisma.worksheetSubmission.findFirst({
-      where: {
-        worksheetId: worksheet.id,
-        studentId: student.id,
-      },
-      orderBy: { attemptNumber: "desc" },
-      select: { attemptNumber: true },
-    });
-
-    const attemptNumber = (lastSubmission?.attemptNumber ?? 0) + 1;
     const scoring = calculateWorksheetScore(content, body.answers);
+    const { submission, grade } = await prisma.$transaction(async (tx) => {
+      const lastSubmission = await tx.worksheetSubmission.findFirst({
+        where: {
+          worksheetId: worksheet.id,
+          studentId: student.id,
+        },
+        orderBy: { attemptNumber: "desc" },
+        select: { attemptNumber: true },
+      });
 
-    const submission = await prisma.worksheetSubmission.create({
-      data: {
-        worksheetId: worksheet.id,
-        studentId: student.id,
-        attemptNumber,
-        answersJson: body.answers,
-        score: scoring.score,
-        submittedAt: new Date(),
-        status: "SUBMITTED",
-      },
-      select: {
-        id: true,
-        worksheetId: true,
-        studentId: true,
-        attemptNumber: true,
-        score: true,
-        submittedAt: true,
-        status: true,
-        createdAt: true,
-      },
+      const attemptNumber = (lastSubmission?.attemptNumber ?? 0) + 1;
+      const submission = await tx.worksheetSubmission.create({
+        data: {
+          worksheetId: worksheet.id,
+          studentId: student.id,
+          attemptNumber,
+          answersJson: body.answers,
+          score: scoring.score,
+          submittedAt: new Date(),
+          status: "SUBMITTED",
+        },
+        select: {
+          id: true,
+          worksheetId: true,
+          studentId: true,
+          attemptNumber: true,
+          score: true,
+          submittedAt: true,
+          status: true,
+          createdAt: true,
+        },
+      });
+
+      const grade = await tx.grade.create({
+        data: {
+          studentId: student.id,
+          worksheetSubmissionId: submission.id,
+          type: "WORKSHEET_AUTO",
+          value: scoring.score,
+          teacherId: null,
+          lessonId: null,
+          comment: null,
+        },
+        select: { id: true },
+      });
+
+      return { submission, grade };
     });
 
     return NextResponse.json({
       submission,
+      gradeId: grade.id,
       result: {
         score: scoring.score,
         maxScore: scoring.maxScore,
       },
     });
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "Worksheet was submitted concurrently. Please try again." },
+        { status: 409 }
+      );
+    }
+
     console.error("POST /api/student/worksheets/[worksheetId]/submit error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

@@ -173,6 +173,7 @@ model Lesson {
 model LessonRecording {
   id                String    @id @default(cuid())
   lessonId          String
+  streamCallId      String
   streamRecordingId String    @unique
   title             String?
   recordingUrl      String
@@ -182,7 +183,8 @@ model LessonRecording {
 
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
-  @@index([lessonId])
+  @@index([lessonId]) 
+  @@index([streamCallId])
 }
 
 model LessonAttendance {
@@ -190,6 +192,7 @@ model LessonAttendance {
   lessonId  String
   userId    String
   status    AttendanceStatus @default(PENDING)
+  markedAt  DateTime?
   joinedAt  DateTime?
   leftAt    DateTime?
   createdAt DateTime         @default(now())

@@ -53,7 +53,8 @@ export async function GET(_request: Request, context: RouteContext) {
           select: {
             id: true,
             user: {
-              select: {
+              select: {        
+                id: true,
                 firstName: true,
                 lastName: true,
                 email: true,
@@ -72,6 +73,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     const students = memberships.map((membership) => ({
       studentId: membership.student.id,
+      userId: membership.student.user.id,
       firstName: membership.student.user.firstName,
       lastName: membership.student.user.lastName,
       email: membership.student.user.email,

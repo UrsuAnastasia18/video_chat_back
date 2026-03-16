@@ -84,6 +84,7 @@ export async function GET(_: Request, context: RouteContext) {
     const recordings = (response.recordings ?? [])
       .map((recording) => ({
         id: `${recording.session_id}:${recording.filename}`,
+        streamRecordingId: `${recording.session_id}:${recording.filename}`,
         filename: recording.filename,
         url: recording.url,
         recordingType: recording.recording_type,
@@ -96,8 +97,43 @@ export async function GET(_: Request, context: RouteContext) {
           new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
       );
 
+    if (recordings.length > 0) {
+      await Promise.all(
+        recordings.map((recording) =>
+          prisma.lessonRecording.upsert({
+            where: { streamRecordingId: recording.streamRecordingId },
+            create: {
+              lessonId: lesson.id,
+              streamCallId: lesson.streamCallId!,
+              streamRecordingId: recording.streamRecordingId,
+              title: recording.filename,
+              recordingUrl: recording.url,
+              startedAt: new Date(recording.startTime),
+              endedAt: new Date(recording.endTime),
+            },
+            update: {
+              lessonId: lesson.id,
+              streamCallId: lesson.streamCallId!,
+              title: recording.filename,
+              recordingUrl: recording.url,
+              startedAt: new Date(recording.startTime),
+              endedAt: new Date(recording.endTime),
+            },
+          })
+        )
+      );
+    }
+
     return NextResponse.json({
-      recordings,
+      recordings: recordings.map((recording) => ({
+        id: recording.id,
+        filename: recording.filename,
+        url: recording.url,
+        recordingType: recording.recordingType,
+        sessionId: recording.sessionId,
+        startTime: recording.startTime,
+        endTime: recording.endTime,
+      })),
       streamCallId: lesson.streamCallId,
     });
   } catch (error) {
@@ -109,4 +145,3 @@ export async function GET(_: Request, context: RouteContext) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-

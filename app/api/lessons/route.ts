@@ -53,21 +53,23 @@ export async function GET(request: NextRequest) {
       parsedStatus = statusParam as LessonStatus;
     }
 
+    const now = new Date();
     const baseFilters: {
       status?: LessonStatus;
       scheduledStart?: { gte: Date };
-      scheduledEnd?: { lt: Date };
-    } = {};
+      scheduledEnd?: { gte?: Date; lt?: Date };
+        } = {};
 
     if (parsedStatus) {
       baseFilters.status = parsedStatus;
     }
     if (upcoming) {
-      baseFilters.scheduledStart = { gte: new Date() };
-    }
+      // Upcoming bucket should include both future and currently in-progress lessons.
+      baseFilters.scheduledEnd = { gte: now };  
+      }
     if (previous) {
-      baseFilters.scheduledEnd = { lt: new Date() };
-    }
+      baseFilters.scheduledEnd = { lt: now };
+        }
 
     const orderBy = previous
       ? ({ scheduledStart: "desc" } as const)

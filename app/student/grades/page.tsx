@@ -1,6 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  StudentChip,
+  StudentEmptyState,
+  StudentError,
+  StudentHero,
+  StudentLoadingGrid,
+  StudentPageHeader,
+  StudentPanel,
+} from "@/components/student/StudentShell";
 
 interface StudentGrade {
   id: string;
@@ -54,58 +63,83 @@ export default function StudentGradesPage() {
 
   return (
     <section className="flex size-full flex-col gap-6 text-black">
-      <div>
-        <h1 className="text-3xl font-bold">My Grades</h1>
-        <p className="text-sm text-slate-500">
-          Unified list of your automatic worksheet grades and teacher manual grades.
-        </p>
-      </div>
+      <StudentPageHeader
+        title="My Grades"
+        subtitle="Track worksheet and lesson grades in one place."
+      />
 
-      {error ? (
-        <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </div>
-      ) : null}
+      <StudentHero
+        title="Academic Progress"
+        subtitle="See your recorded grades from worksheets and teacher evaluations."
+        rightSlot={
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center">
+            <p className="text-2xl font-black leading-none text-white">{grades.length}</p>
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white/45">
+              grades
+            </p>
+          </div>
+        }
+        chips={
+          <>
+            <StudentChip>Worksheet Auto</StudentChip>
+            <StudentChip>Teacher Manual</StudentChip>
+          </>
+        }
+      />
+
+      {error ? <StudentError message={error} /> : null}
 
       {loading ? (
-        <p className="text-sm text-slate-500">Loading grades...</p>
+        <StudentLoadingGrid cards={6} />
       ) : grades.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
-          You do not have grades yet.
-        </div>
+        <StudentEmptyState
+          title="No grades yet"
+          description="Your grades will appear here after worksheet submissions or teacher evaluation."
+        />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {grades.map((grade) => {
-            const typeLabel =
-              grade.type === "WORKSHEET_AUTO" ? "Worksheet Auto" : "Oral Manual";
-            const sourceLabel = grade.worksheetSubmission?.worksheet?.title
-              ? `Worksheet: ${grade.worksheetSubmission.worksheet.title}`
-              : grade.lesson?.title
-                ? `Lesson: ${grade.lesson.title}`
-                : "Source unavailable";
+        <StudentPanel
+          title="Grades History"
+          rightSlot={
+            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-600">
+              {grades.length}
+            </span>
+          }
+        >
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {grades.map((grade) => {
+              const typeLabel =
+                grade.type === "WORKSHEET_AUTO" ? "Worksheet Auto" : "Oral Manual";
+              const sourceLabel = grade.worksheetSubmission?.worksheet?.title
+                ? `Worksheet: ${grade.worksheetSubmission.worksheet.title}`
+                : grade.lesson?.title
+                  ? `Lesson: ${grade.lesson.title}`
+                  : "Source unavailable";
 
-            return (
-              <article
-                key={grade.id}
-                className="flex h-full flex-col rounded-xl border border-slate-200 bg-white p-5"
-              >
-                <p className="text-xs font-semibold text-blue-600">{typeLabel}</p>
-                <h2 className="mt-1 text-lg font-semibold text-slate-900">
-                  Grade: {grade.value}
-                </h2>
-                <p className="mt-2 text-sm text-slate-600">{sourceLabel}</p>
-                <p className="mt-2 text-sm text-slate-500">
-                  Graded: {new Date(grade.gradedAt).toLocaleString()}
-                </p>
-                {grade.comment ? (
-                  <p className="mt-2 text-sm text-slate-600">{grade.comment}</p>
-                ) : (
-                  <p className="mt-2 text-sm text-slate-500">No comment.</p>
-                )}
-              </article>
-            );
-          })}
-        </div>
+              return (
+                <article
+                  key={grade.id}
+                  className="flex h-full flex-col rounded-2xl border border-slate-200 bg-slate-50 p-5"
+                >
+                  <p className="inline-flex w-fit rounded-full bg-blue-100 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
+                    {typeLabel}
+                  </p>
+                  <h2 className="mt-2 text-lg font-semibold text-slate-900">
+                    Grade: {grade.value}
+                  </h2>
+                  <p className="mt-2 text-sm text-slate-600">{sourceLabel}</p>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Graded: {new Date(grade.gradedAt).toLocaleString()}
+                  </p>
+                  {grade.comment ? (
+                    <p className="mt-2 text-sm text-slate-600">{grade.comment}</p>
+                  ) : (
+                    <p className="mt-2 text-sm text-slate-500">No comment.</p>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </StudentPanel>
       )}
     </section>
   );

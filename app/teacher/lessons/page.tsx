@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function TeacherLessonsRedirectPage() {
+export default function TeacherLessonsPage() {
   redirect("/upcoming");
 }

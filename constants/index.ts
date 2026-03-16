@@ -71,6 +71,12 @@ export const sidebarLinks = [
         roles: ['STUDENT'] as AppRole[],
     },
     {
+        label: 'My Lessons',
+        route: '/student/lessons',
+        imgUrl: '/icons/upcoming.svg',
+        roles: ['STUDENT'] as AppRole[],
+    },
+    {
         label: 'My Grades',
         route: '/student/grades',
         imgUrl: '/icons/checked.svg',

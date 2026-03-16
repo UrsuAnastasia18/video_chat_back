@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { WorksheetContent, WorksheetQuestion } from "@/lib/worksheet-content";
 
 /* ── Types ───────────────────────────────────────────────────────────────── */
@@ -94,7 +94,6 @@ export default function TeacherWorksheetsPage() {
   const [description, setDescription] = useState("");
   const [instructions, setInstructions] = useState("Choose one correct answer for each question and submit.");
   const [levelId, setLevelId] = useState("");
-  const [passingScore, setPassingScore] = useState("");
   const [isActive, setIsActive] = useState(true);
 
   /* question builder */
@@ -107,7 +106,7 @@ export default function TeacherWorksheetsPage() {
     return null;
   }, [activeFilter]);
 
-  const loadWorksheets = async (lf = levelFilter, aq = activeQuery) => {
+  const loadWorksheets = useCallback(async (lf = levelFilter, aq = activeQuery) => {
     const q = new URLSearchParams();
     if (lf && lf !== "all") q.set("levelId", lf);
     if (aq === "true" || aq === "false") q.set("isActive", aq);
@@ -115,7 +114,7 @@ export default function TeacherWorksheetsPage() {
     const data = (await res.json()) as { worksheets?: Worksheet[]; error?: string };
     if (!res.ok) throw new Error(data.error ?? "Failed to load worksheets");
     setWorksheets(data.worksheets ?? []);
-  };
+  }, [activeQuery, levelFilter]);
 
   useEffect(() => {
     const init = async () => {
@@ -144,11 +143,14 @@ export default function TeacherWorksheetsPage() {
     loadWorksheets(levelFilter, activeQuery).catch((e) =>
       setPageError(e instanceof Error ? e.message : "Failed to filter")
     );
-  }, [levelFilter, activeQuery]);
+  }, [activeQuery, levelFilter, loadWorksheets, loading]);
+
+  const derivedMaxScore = questions.length;
+  const derivedPassingScore = questions.length > 0 ? 1 : 0;
 
   /* ── Form helpers ─────────────────────────────────────────────────────── */
   const resetForm = () => {
-    setTitle(""); setDescription(""); setPassingScore(""); setIsActive(true);
+    setTitle(""); setDescription(""); setIsActive(true);
     setInstructions("Choose one correct answer for each question and submit.");
     setLevelId(levels[0]?.id ?? "");
     setQuestions([emptyQuestion()]);
@@ -169,7 +171,6 @@ export default function TeacherWorksheetsPage() {
     setDescription(ws.description ?? "");
     setInstructions(ws.instructions ?? "");
     setLevelId(ws.level.id);
-    setPassingScore(ws.passingScore === null ? "" : String(ws.passingScore));
     setIsActive(ws.isActive);
     setQuestions(
       ws.contentJson?.questions?.length
@@ -246,6 +247,9 @@ export default function TeacherWorksheetsPage() {
           setPageError(`Întrebarea ${i + 1}, opțiunea ${j + 1}: textul este obligatoriu.`); return;
         }
       }
+      if (!q.correctOptionId) {
+        setPageError(`Întrebarea ${i + 1}: selectează răspunsul corect.`); return;
+      }
     }
 
     const contentJson: WorksheetContent = {
@@ -259,7 +263,7 @@ export default function TeacherWorksheetsPage() {
       instructions: instructions.trim() || null,
       levelId,
       contentJson,
-      passingScore: passingScore.trim() === "" ? null : Number(passingScore),
+      passingScore: derivedPassingScore,
       ...(editingId ? { isActive } : {}),
     };
 
@@ -403,12 +407,19 @@ export default function TeacherWorksheetsPage() {
               </div>
 
               <div>
+                <label style={lbl}>Scor maxim</label>
+                <input style={inp} type="number" value={derivedMaxScore} readOnly />
+                <p className="mt-1 text-xs" style={{ color: "#94a3b8" }}>
+                  Se calculează automat din numărul de întrebări.
+                </p>
+              </div>
+
+              <div>
                 <label style={lbl}>Scor minim de promovare</label>
-                <input style={inp} type="number" min={0} value={passingScore}
-                  onChange={(e) => setPassingScore(e.target.value)}
-                  placeholder="ex: 7  (din numărul de întrebări)"
-                  onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4f8ef7"; }}
-                  onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = "#e2e8f0"; }} />
+                <input style={inp} type="number" value={derivedPassingScore} readOnly />
+                <p className="mt-1 text-xs" style={{ color: "#94a3b8" }}>
+                  Fișa este promovată cu cel puțin 1 răspuns corect.
+                </p>
               </div>
 
               <div className="md:col-span-2">

@@ -148,7 +148,7 @@ async function main() {
       levelId: levelRecords[level.code].id,
       contentJson: demoWorksheetContent,
       maxScore: demoWorksheetContent.questions.length,
-      passingScore: 2,
+      passingScore: 1,
       isActive: true,
       createdById: teacherUser.id,
     };

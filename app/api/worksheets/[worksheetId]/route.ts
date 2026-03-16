@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser, requireTeacher } from "@/lib/auth";
+import {
+  getWorksheetMaxScore,
+  getWorksheetPassingScore,
+  validateWorksheetContent,
+  type WorksheetContent,
+} from "@/lib/worksheet-content";
 
 type RouteContext = {
   params: Promise<{ worksheetId: string }>;
@@ -9,7 +15,7 @@ type RouteContext = {
 async function getWorksheet(worksheetId: string) {
   return prisma.worksheet.findUnique({
     where: { id: worksheetId },
-    select: { id: true, isActive: true, maxScore: true },
+    select: { id: true, isActive: true, maxScore: true, contentJson: true },
   });
 }
 
@@ -35,6 +41,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       title: true,
       description: true,
       instructions: true,
+      contentJson: true,
       isActive: true,
       maxScore: true,
       passingScore: true,
@@ -51,13 +58,26 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Worksheet not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ worksheet });
+  const contentValidation = validateWorksheetContent(worksheet.contentJson);
+  if (!contentValidation.valid) {
+    return NextResponse.json({ worksheet });
+  }
+
+  const maxScore = getWorksheetMaxScore(worksheet.contentJson as WorksheetContent);
+
+  return NextResponse.json({
+    worksheet: {
+      ...worksheet,
+      maxScore,
+      passingScore: getWorksheetPassingScore(maxScore),
+    },
+  });
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
    PATCH /api/worksheets/[worksheetId]
    Doar profesori.
-   Variantă compatibilă cu schema actuală fără contentJson.
+   maxScore și passingScore sunt derivate din contentJson.
 ────────────────────────────────────────────────────────────────────────── */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
@@ -86,6 +106,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       passingScore?: unknown;
       maxScore?: unknown;
       resourceUrl?: unknown;
+      contentJson?: unknown;
     };
 
     const updateData: {
@@ -94,6 +115,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       instructions?: string | null;
       levelId?: string;
       isActive?: boolean;
+      contentJson?: WorksheetContent;
       maxScore?: number;
       passingScore?: number | null;
       resourceUrl?: string | null;
@@ -178,49 +200,31 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       updateData.isActive = body.isActive;
     }
 
-    if (body.maxScore !== undefined) {
-      if (
-        typeof body.maxScore !== "number" ||
-        !Number.isInteger(body.maxScore) ||
-        body.maxScore < 0
-      ) {
+    if (body.contentJson !== undefined) {
+      const contentValidation = validateWorksheetContent(body.contentJson);
+      if (!contentValidation.valid) {
         return NextResponse.json(
-          { error: "maxScore must be a non-negative integer" },
+          { error: contentValidation.error },
           { status: 400 }
         );
       }
-      updateData.maxScore = body.maxScore;
-    }
 
-    if (body.passingScore !== undefined) {
-      if (body.passingScore === null) {
-        updateData.passingScore = null;
-      } else if (
-        typeof body.passingScore === "number" &&
-        Number.isInteger(body.passingScore)
-      ) {
-        const effectiveMaxScore =
-          updateData.maxScore ?? existing.maxScore ?? 0;
-
-        if (
-          body.passingScore < 0 ||
-          body.passingScore > effectiveMaxScore
-        ) {
-          return NextResponse.json(
-            {
-              error: `passingScore must be between 0 and ${effectiveMaxScore}`,
-            },
-            { status: 400 }
-          );
-        }
-
-        updateData.passingScore = body.passingScore;
-      } else {
+      const contentJson = body.contentJson as WorksheetContent;
+      updateData.contentJson = contentJson;
+      updateData.maxScore = getWorksheetMaxScore(contentJson);
+      updateData.passingScore = getWorksheetPassingScore(updateData.maxScore);
+    } else if (existing.contentJson) {
+      const contentValidation = validateWorksheetContent(existing.contentJson);
+      if (!contentValidation.valid) {
         return NextResponse.json(
-          { error: "passingScore must be an integer or null" },
+          { error: contentValidation.error },
           { status: 400 }
         );
       }
+
+      const contentJson = existing.contentJson as WorksheetContent;
+      updateData.maxScore = getWorksheetMaxScore(contentJson);
+      updateData.passingScore = getWorksheetPassingScore(updateData.maxScore);
     }
 
     const worksheet = await prisma.worksheet.update({
@@ -231,6 +235,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         title: true,
         description: true,
         instructions: true,
+        contentJson: true,
         isActive: true,
         maxScore: true,
         passingScore: true,

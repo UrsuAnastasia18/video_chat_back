@@ -16,6 +16,18 @@ export type WorksheetContent = {
   questions: WorksheetQuestion[];
 };
 
+export function getWorksheetMaxScore(content: WorksheetContent) {
+  return content.questions.length;
+}
+
+export function getWorksheetPassingScore(maxScore: number) {
+  return maxScore > 0 ? 1 : 0;
+}
+
+export function didPassWorksheet(score: number, passingScore: number | null) {
+  return passingScore !== null ? score >= passingScore : null;
+}
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -79,12 +91,12 @@ export function validateWorksheetContent(value: unknown): { valid: true } | { va
     }
 
     if (
-      question.correctOptionId !== undefined &&
-      (typeof question.correctOptionId !== "string" || !optionIds.has(question.correctOptionId))
+      typeof question.correctOptionId !== "string" ||
+      !optionIds.has(question.correctOptionId)
     ) {
       return {
         valid: false,
-        error: `question ${question.id}: correctOptionId must match one option.id`,
+        error: `question ${question.id}: correctOptionId is required and must match one option.id`,
       };
     }
   }
@@ -93,13 +105,10 @@ export function validateWorksheetContent(value: unknown): { valid: true } | { va
 }
 
 export function calculateWorksheetScore(content: WorksheetContent, answers: Record<string, string>) {
-  const totalQuestions = content.questions.length;
+  const totalQuestions = getWorksheetMaxScore(content);
   let correctAnswers = 0;
 
   for (const question of content.questions) {
-    if (!question.correctOptionId) {
-      continue;
-    }
     if (answers[question.id] === question.correctOptionId) {
       correctAnswers += 1;
     }

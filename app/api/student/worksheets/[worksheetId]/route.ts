@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth";
+import {
+  getWorksheetMaxScore,
+  getWorksheetPassingScore,
+  validateWorksheetContent,
+  type WorksheetContent,
+} from "@/lib/worksheet-content";
 
 type RouteContext = {
   params: Promise<{ worksheetId: string }>;
@@ -58,7 +64,20 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Worksheet not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ worksheet });
+    const contentValidation = validateWorksheetContent(worksheet.contentJson);
+    if (!contentValidation.valid) {
+      return NextResponse.json({ worksheet });
+    }
+
+    const maxScore = getWorksheetMaxScore(worksheet.contentJson as WorksheetContent);
+
+    return NextResponse.json({
+      worksheet: {
+        ...worksheet,
+        maxScore,
+        passingScore: getWorksheetPassingScore(maxScore),
+      },
+    });
   } catch (error) {
     console.error("GET /api/student/worksheets/[worksheetId] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

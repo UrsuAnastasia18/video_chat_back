@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser, requireTeacher } from "@/lib/auth";
+import {
+  getWorksheetMaxScore,
+  getWorksheetPassingScore,
+  validateWorksheetContent,
+  type WorksheetContent,
+} from "@/lib/worksheet-content";
 
 function parseBooleanFilter(value: string | null): boolean | undefined {
   if (value === null) return undefined;
@@ -62,6 +68,7 @@ export async function GET(request: NextRequest) {
         title: true,
         description: true,
         instructions: true,
+        contentJson: true,
         resourceUrl: true,
         isActive: true,
         maxScore: true,
@@ -73,7 +80,21 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ worksheets });
+    const normalizedWorksheets = worksheets.map((worksheet) => {
+      const contentValidation = validateWorksheetContent(worksheet.contentJson);
+      if (!contentValidation.valid) {
+        return worksheet;
+      }
+
+      const maxScore = getWorksheetMaxScore(worksheet.contentJson as WorksheetContent);
+      return {
+        ...worksheet,
+        maxScore,
+        passingScore: getWorksheetPassingScore(maxScore),
+      };
+    });
+
+    return NextResponse.json({ worksheets: normalizedWorksheets });
   } catch (error) {
     console.error("GET /api/worksheets error:", error);
     return NextResponse.json(
@@ -87,9 +108,8 @@ export async function GET(request: NextRequest) {
  * POST /api/worksheets
  * Doar profesori.
  *
- * Variantă compatibilă cu schema actuală:
- * - fără contentJson
- * - worksheet-ul este definit prin metadata + resourceUrl + scoruri
+ * Worksheet-ul este definit prin contentJson.
+ * maxScore și passingScore sunt derivate automat.
  */
 export async function POST(request: NextRequest) {
   let user;
@@ -108,6 +128,7 @@ export async function POST(request: NextRequest) {
       passingScore?: unknown;
       maxScore?: unknown;
       resourceUrl?: unknown;
+      contentJson?: unknown;
     };
 
     const title = typeof body.title === "string" ? body.title.trim() : "";
@@ -142,40 +163,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (
-      typeof body.maxScore !== "number" ||
-      !Number.isInteger(body.maxScore) ||
-      body.maxScore < 0
-    ) {
+    const contentValidation = validateWorksheetContent(body.contentJson);
+    if (!contentValidation.valid) {
       return NextResponse.json(
-        { error: "maxScore must be a non-negative integer" },
+        { error: contentValidation.error },
         { status: 400 }
       );
     }
 
-    const maxScore = body.maxScore;
-
-    let passingScore: number | null = null;
-    if (body.passingScore !== undefined && body.passingScore !== null) {
-      if (
-        typeof body.passingScore !== "number" ||
-        !Number.isInteger(body.passingScore)
-      ) {
-        return NextResponse.json(
-          { error: "passingScore must be an integer or null" },
-          { status: 400 }
-        );
-      }
-
-      if (body.passingScore < 0 || body.passingScore > maxScore) {
-        return NextResponse.json(
-          { error: `passingScore must be between 0 and ${maxScore}` },
-          { status: 400 }
-        );
-      }
-
-      passingScore = body.passingScore;
-    }
+    const contentJson = body.contentJson as WorksheetContent;
+    const maxScore = getWorksheetMaxScore(contentJson);
+    const passingScore = getWorksheetPassingScore(maxScore);
 
     const level = await prisma.englishLevel.findUnique({
       where: { id: levelId },
@@ -194,6 +192,7 @@ export async function POST(request: NextRequest) {
         title,
         description,
         instructions,
+        contentJson,
         resourceUrl,
         levelId,
         maxScore,
@@ -206,6 +205,7 @@ export async function POST(request: NextRequest) {
         title: true,
         description: true,
         instructions: true,
+        contentJson: true,
         resourceUrl: true,
         isActive: true,
         maxScore: true,

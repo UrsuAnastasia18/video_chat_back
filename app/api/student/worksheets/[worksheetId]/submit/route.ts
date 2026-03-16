@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth";
 import {
   calculateWorksheetScore,
+  didPassWorksheet,
+  getWorksheetPassingScore,
   validateWorksheetContent,
   type WorksheetContent,
 } from "@/lib/worksheet-content";
@@ -61,6 +63,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       select: {
         id: true,
         contentJson: true,
+        passingScore: true,
       },
     });
 
@@ -158,6 +161,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       result: {
         score: scoring.score,
         maxScore: scoring.maxScore,
+        passed: didPassWorksheet(scoring.score, getWorksheetPassingScore(scoring.maxScore)),
       },
     });
   } catch (error) {

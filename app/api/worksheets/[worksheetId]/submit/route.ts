@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth";
+import {
+    calculateWorksheetScore,
+    didPassWorksheet,
+    getWorksheetPassingScore,
+    validateWorksheetContent,
+    type WorksheetContent,
+} from "@/lib/worksheet-content";
 
 type RouteContext = {
     params: Promise<{ worksheetId: string }>;
@@ -11,10 +18,7 @@ type RouteContext = {
  *
  * Body: { answers: Record<string, string> }
  *
- * Variantă compatibilă cu schema curentă Prisma:
- * - NU folosește contentJson (pentru că nu există în modelul Worksheet)
- * - calculează un scor simplificat pe baza numărului de răspunsuri trimise
- *   raportat la worksheet.maxScore
+ * Evaluează răspunsurile pe baza conținutului worksheet-ului.
  */
 export async function POST(request: NextRequest, context: RouteContext) {
     let user;
@@ -59,6 +63,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         select: {
             id: true,
             title: true,
+            contentJson: true,
             maxScore: true,
             passingScore: true,
             isActive: true,
@@ -76,23 +81,47 @@ export async function POST(request: NextRequest, context: RouteContext) {
         );
     }
 
-    /**
-     * Pentru că în schema actuală nu există contentJson,
-     * nu putem calcula răspunsuri corecte.
-     *
-     * Folosim temporar un scor simplificat:
-     * score = numărul de răspunsuri trimise, plafonat la worksheet.maxScore
-     * maxScore = worksheet.maxScore
-     */
-    const answeredCount = Object.keys(answers).length;
-    const maxScore = Math.max(worksheet.maxScore, 1);
-    const score = Math.min(answeredCount, maxScore);
+    if (!worksheet.contentJson) {
+        return NextResponse.json(
+            { error: "Worksheet has no interactive content" },
+            { status: 400 }
+        );
+    }
 
-    let gradeValue: number;
-    gradeValue = Math.max(1, Math.round((score / maxScore) * 10));
+    const contentValidation = validateWorksheetContent(worksheet.contentJson);
+    if (!contentValidation.valid) {
+        return NextResponse.json(
+            { error: "Worksheet content is invalid. Contact teacher." },
+            { status: 400 }
+        );
+    }
 
-    const passed =
-        worksheet.passingScore !== null ? score >= worksheet.passingScore : null;
+    const content = worksheet.contentJson as WorksheetContent;
+    for (const question of content.questions) {
+        const selected = answers[question.id];
+        if (!selected) {
+            return NextResponse.json(
+                { error: `Missing answer for question ${question.id}` },
+                { status: 400 }
+            );
+        }
+
+        const optionIds = new Set(question.options.map((option) => option.id));
+        if (!optionIds.has(selected)) {
+            return NextResponse.json(
+                { error: `Invalid option for question ${question.id}` },
+                { status: 400 }
+            );
+        }
+    }
+
+    const scoring = calculateWorksheetScore(content, answers);
+    const maxScore = scoring.maxScore;
+    const score = scoring.score;
+
+    const gradeValue = Math.max(1, Math.round((score / maxScore) * 10));
+
+    const passed = didPassWorksheet(score, getWorksheetPassingScore(maxScore));
 
     const existingSubmissions = await prisma.worksheetSubmission.findMany({
         where: { worksheetId, studentId: studentProfile.id },
@@ -145,7 +174,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         select: { id: true },
     });
 
-    const comment = `Worksheet: ${worksheet.title} — submitted answers: ${answeredCount}, computed score: ${score}/${maxScore} (attempt #${submission.attemptNumber})`;
+    const comment = `Worksheet: ${worksheet.title} — correct answers: ${score}/${maxScore} (attempt #${submission.attemptNumber})`;
 
     const grade = existingGrade
         ? await prisma.grade.update({

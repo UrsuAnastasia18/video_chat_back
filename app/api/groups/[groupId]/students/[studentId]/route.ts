@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireTeacher } from "@/lib/auth";
+import { revalidateTeacherGroupPaths } from "@/lib/group-cache";
 
 type RouteContext = {
   params: Promise<{ groupId: string; studentId: string }>;
@@ -52,6 +53,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       where: { id: membership.id },
       data: { isActive: false },
     });
+
+    revalidateTeacherGroupPaths([groupId]);
 
     return NextResponse.json({ success: true });
   } catch (error) {

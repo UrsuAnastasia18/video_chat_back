@@ -90,7 +90,7 @@ const MeetingTypeList = () => {
     const fetchGroups = async () => {
       setGroupsLoading(true);
       try {
-        const res = await fetch("/api/groups");
+        const res = await fetch("/api/groups", { cache: "no-store" });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Failed to fetch groups");
         const groups = (data.groups ?? []) as TeacherGroupOption[];

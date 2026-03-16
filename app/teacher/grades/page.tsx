@@ -60,7 +60,7 @@ export default function TeacherGradesPage() {
   const loadGroups = async () => {
     setGroupsLoading(true);
     try {
-      const r = await fetch("/api/groups");
+      const r = await fetch("/api/groups", { cache: "no-store" });
       const d = (await r.json()) as { groups?: GroupOption[] };
       const fetchedGroups = d.groups ?? [];
       setGroups(fetchedGroups);

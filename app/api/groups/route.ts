@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireTeacher } from "@/lib/auth";
 
+const NO_STORE_HEADERS = { "Cache-Control": "no-store" };
+
 export async function GET() {
   let user;
   try {
@@ -26,13 +28,19 @@ export async function GET() {
         },
         createdAt: true,
         _count: {
-          select: { memberships: true },
+          select: {
+            memberships: {
+              where: {
+                isActive: true,
+              },
+            },
+          },
         },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ groups });
+    return NextResponse.json({ groups }, { headers: NO_STORE_HEADERS });
   } catch (error) {
     console.error("GET /api/groups error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

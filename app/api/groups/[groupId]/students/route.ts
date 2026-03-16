@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireTeacher } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
+import { revalidateTeacherGroupPaths } from "@/lib/group-cache";
 
 type RouteContext = {
   params: Promise<{ groupId: string }>;
 };
+
+const NO_STORE_HEADERS = { "Cache-Control": "no-store" };
 
 /**
  * Verifies the group belongs to the current teacher. Returns group or error response.
@@ -87,7 +90,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         level: result.group.level,
       },
       students: memberships,
-    });
+    }, { headers: NO_STORE_HEADERS });
   } catch (error) {
     console.error("GET /api/groups/[groupId]/students error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -187,6 +190,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       return membershipRecord;
     });
+
+    revalidateTeacherGroupPaths([groupId]);
 
     return NextResponse.json(
       {

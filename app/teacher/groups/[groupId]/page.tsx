@@ -63,8 +63,8 @@ export default function GroupDetailPage() {
     const fetchGroupData = useCallback(async () => {
         try {
             const [groupsRes, membersRes] = await Promise.all([
-                fetch("/api/groups"),
-                fetch(`/api/groups/${groupId}/students`),
+                fetch("/api/groups", { cache: "no-store" }),
+                fetch(`/api/groups/${groupId}/students`, { cache: "no-store" }),
             ]);
             const groupsData = await groupsRes.json();
             const membersData = await membersRes.json();

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GraduationCap, BookOpen } from "lucide-react";
 
@@ -21,10 +22,10 @@ export default function SignUpRolePage() {
       <div className="flex flex-col items-center gap-8 px-4">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-white mb-2">
-            Create your account
+            Creează-ți contul
           </h1>
           <p className="text-sky-1 text-base">
-            Choose your role to get started
+            Alege rolul tău pentru a începe
           </p>
         </div>
 
@@ -39,10 +40,10 @@ export default function SignUpRolePage() {
             </div>
             <div className="text-center">
               <h2 className="text-xl font-semibold text-white mb-1">
-                Student
+                Elev
               </h2>
               <p className="text-sm text-gray-400">
-                Join classes and learn English
+                Intră la lecții și învață engleză
               </p>
             </div>
           </button>
@@ -57,20 +58,20 @@ export default function SignUpRolePage() {
             </div>
             <div className="text-center">
               <h2 className="text-xl font-semibold text-white mb-1">
-                Teacher
+                Profesor
               </h2>
               <p className="text-sm text-gray-400">
-                Create groups and manage lessons
+                Creează grupe și gestionează lecțiile
               </p>
             </div>
           </button>
         </div>
 
         <p className="text-sm text-gray-500">
-          Already have an account?{" "}
-          <a href="/sign-in" className="text-blue-1 hover:underline">
-            Sign in
-          </a>
+          Ai deja un cont?{" "}
+          <Link href="/sign-in" className="text-blue-1 hover:underline">
+            Autentifică-te
+          </Link>
         </p>
       </div>
     </main>

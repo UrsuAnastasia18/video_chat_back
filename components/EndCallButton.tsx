@@ -21,7 +21,7 @@ const EndCallButton = () => {
             await call.endCall();
             router.push('/')
         }} className="bg-red-500">
-            End call for everyone
+            Încheie apelul pentru toți
         </Button>
     )
 }

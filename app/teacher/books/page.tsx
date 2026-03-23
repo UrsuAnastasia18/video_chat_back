@@ -70,7 +70,7 @@ export default function TeacherBooksPage() {
     if (filters?.isActive === "true" || filters?.isActive === "false") query.set("isActive", filters.isActive);
     const res = await fetch(`/api/books${query.toString() ? `?${query}` : ""}`);
     const payload = (await res.json()) as { books?: Book[]; error?: string };
-    if (!res.ok) throw new Error(payload.error ?? "Failed to load books");
+    if (!res.ok) throw new Error(payload.error ?? "Nu am putut încărca cărțile");
     setBooks(payload.books ?? []);
   };
 
@@ -82,14 +82,14 @@ export default function TeacherBooksPage() {
         const [levelsRes, booksRes] = await Promise.all([fetch("/api/levels"), fetch("/api/books")]);
         const lp = (await levelsRes.json()) as { levels?: Level[]; error?: string };
         const bp = (await booksRes.json()) as { books?: Book[]; error?: string };
-        if (!levelsRes.ok) throw new Error(lp.error ?? "Failed to load levels");
-        if (!booksRes.ok) throw new Error(bp.error ?? "Failed to load books");
+        if (!levelsRes.ok) throw new Error(lp.error ?? "Nu am putut încărca nivelurile");
+        if (!booksRes.ok) throw new Error(bp.error ?? "Nu am putut încărca cărțile");
         const fl = lp.levels ?? [];
         setLevels(fl);
         setBooks(bp.books ?? []);
         setForm((p) => ({ ...p, levelId: p.levelId || fl[0]?.id || "" }));
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load data");
+        setError(err instanceof Error ? err.message : "Nu am putut încărca datele");
       } finally {
         setLoading(false);
       }
@@ -100,7 +100,7 @@ export default function TeacherBooksPage() {
   useEffect(() => {
     if (loading) return;
     loadBooks({ levelId: levelFilter, isActive: activeQuery }).catch((err) => {
-      setError(err instanceof Error ? err.message : "Failed to filter books");
+      setError(err instanceof Error ? err.message : "Nu am putut filtra cărțile");
     });
   }, [levelFilter, activeQuery, loading]);
 
@@ -128,12 +128,12 @@ export default function TeacherBooksPage() {
         body: JSON.stringify(body),
       });
       const payload = (await res.json()) as { error?: string };
-      if (!res.ok) throw new Error(payload.error ?? "Failed to save book");
+      if (!res.ok) throw new Error(payload.error ?? "Nu am putut salva cartea");
       await loadBooks({ levelId: levelFilter, isActive: activeQuery });
-      setSuccess(editingBookId ? "Book updated successfully." : "Book created successfully.");
+      setSuccess(editingBookId ? "Cartea a fost actualizată cu succes." : "Cartea a fost creată cu succes.");
       resetForm();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save book");
+      setError(err instanceof Error ? err.message : "Nu am putut salva cartea");
     } finally {
       setSubmitting(false);
     }
@@ -154,11 +154,11 @@ export default function TeacherBooksPage() {
     try {
       const res = await fetch(`/api/books/${bookId}`, { method: "DELETE" });
       const payload = (await res.json()) as { error?: string };
-      if (!res.ok) throw new Error(payload.error ?? "Failed to deactivate book");
+      if (!res.ok) throw new Error(payload.error ?? "Nu am putut dezactiva cartea");
       await loadBooks({ levelId: levelFilter, isActive: activeQuery });
-      setSuccess("Book deactivated successfully.");
+      setSuccess("Cartea a fost dezactivată cu succes.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to deactivate book");
+      setError(err instanceof Error ? err.message : "Nu am putut dezactiva cartea");
     }
   };
 
@@ -185,8 +185,8 @@ export default function TeacherBooksPage() {
 
         <div className="relative z-10 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-[28px] font-bold tracking-tight">Books</h1>
-            <p className="mt-1 text-sm text-white/70">Manage PDF books by English level.</p>
+            <h1 className="text-[28px] font-bold tracking-tight">Cărți</h1>
+            <p className="mt-1 text-sm text-white/70">Gestionează cărțile PDF după nivelul de engleză.</p>
           </div>
           <button
             onClick={() => { resetForm(); setFormOpen(true); }}
@@ -196,7 +196,7 @@ export default function TeacherBooksPage() {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            Add Book
+            Adaugă carte
           </button>
         </div>
       </div>
@@ -224,7 +224,7 @@ export default function TeacherBooksPage() {
         <div className="rounded-2xl p-6" style={panelStyle}>
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-lg font-bold" style={{ color: "#1e293b" }}>
-              {editingBookId ? "Edit Book" : "Add New Book"}
+              {editingBookId ? "Editează cartea" : "Adaugă o carte nouă"}
             </h2>
             <button onClick={resetForm} className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors" style={{ color: "#94a3b8" }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#f1f5f9" }}
@@ -237,18 +237,18 @@ export default function TeacherBooksPage() {
 
           <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
             <div className="md:col-span-2">
-              <InputField label="Title" required>
+              <InputField label="Titlu" required>
                 <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-                  style={inputStyle} required placeholder="e.g. English Grammar in Use" />
+                  style={inputStyle} required placeholder="ex. English Grammar in Use" />
               </InputField>
             </div>
 
-            <InputField label="Author">
+            <InputField label="Autor">
               <input value={form.author} onChange={(e) => setForm((p) => ({ ...p, author: e.target.value }))}
-                style={inputStyle} placeholder="e.g. Raymond Murphy" />
+                style={inputStyle} placeholder="ex. Raymond Murphy" />
             </InputField>
 
-            <InputField label="Level" required>
+            <InputField label="Nivel" required>
               <div className="relative">
                 <select value={form.levelId} onChange={(e) => setForm((p) => ({ ...p, levelId: e.target.value }))}
                   style={{ ...inputStyle, appearance: "none", paddingRight: "36px" }} required>
@@ -261,24 +261,24 @@ export default function TeacherBooksPage() {
             </InputField>
 
             <div className="md:col-span-2">
-              <InputField label="Resource URL (PDF)" required>
+              <InputField label="URL resursă (PDF)" required>
                 <input value={form.resourceUrl} onChange={(e) => setForm((p) => ({ ...p, resourceUrl: e.target.value }))}
                   style={inputStyle} required placeholder="/manuals/book.pdf" />
               </InputField>
             </div>
 
             <div className="md:col-span-2">
-              <InputField label="Cover Image URL">
+              <InputField label="URL imagine copertă">
                 <input value={form.coverImageUrl} onChange={(e) => setForm((p) => ({ ...p, coverImageUrl: e.target.value }))}
                   style={inputStyle} placeholder="https://..." />
               </InputField>
             </div>
 
             <div className="md:col-span-2">
-              <InputField label="Description">
+              <InputField label="Descriere">
                 <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                   style={{ ...inputStyle, minHeight: "90px", resize: "vertical" }}
-                  placeholder="Brief description of this book..." />
+                  placeholder="Scurtă descriere a acestei cărți..." />
               </InputField>
             </div>
 
@@ -295,7 +295,7 @@ export default function TeacherBooksPage() {
                   <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${form.isActive ? "border-emerald-500 bg-emerald-500" : "border-slate-300"}`}>
                     {form.isActive && <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>}
                   </div>
-                  {form.isActive ? "Active" : "Inactive"}
+                  {form.isActive ? "Activă" : "Inactivă"}
                 </button>
               </div>
             )}
@@ -308,15 +308,15 @@ export default function TeacherBooksPage() {
                 style={{ background: "#4f8ef7", boxShadow: "0 4px 12px rgba(79,142,247,0.25)" }}
               >
                 {submitting ? (
-                  <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Saving...</>
-                ) : editingBookId ? "Update Book" : "Create Book"}
+                  <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Se salvează...</>
+                ) : editingBookId ? "Actualizează cartea" : "Creează cartea"}
               </button>
               <button type="button" onClick={resetForm}
                 className="rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
                 style={{ color: "#64748b" }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#f1f5f9" }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "" }}>
-                Cancel
+                Anulează
               </button>
             </div>
           </form>
@@ -327,13 +327,13 @@ export default function TeacherBooksPage() {
       <div className="overflow-hidden rounded-2xl" style={panelStyle}>
         {/* Filters header */}
         <div className="flex flex-wrap items-center gap-3 bg-slate-50/80 px-5 py-4" style={{ borderBottom: "1px solid #e2e8f0" }}>
-          <h2 className="mr-auto text-base font-bold" style={{ color: "#1e293b" }}>Library</h2>
+          <h2 className="mr-auto text-base font-bold" style={{ color: "#1e293b" }}>Bibliotecă</h2>
 
           <div className="relative">
             <select value={levelFilter} onChange={(e) => setLevelFilter(e.target.value)}
               className="appearance-none rounded-xl py-2 pl-3 pr-8 text-sm outline-none"
               style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", color: "#475569" }}>
-              <option value="all">All levels</option>
+              <option value="all">Toate nivelurile</option>
               {levels.map((l) => <option key={l.id} value={l.id}>{l.code} — {l.title}</option>)}
             </select>
             <svg className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2" style={{ color: "#94a3b8" }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -345,7 +345,7 @@ export default function TeacherBooksPage() {
             <select value={activeFilter} onChange={(e) => setActiveFilter(e.target.value as ActiveFilter)}
               className="appearance-none rounded-xl py-2 pl-3 pr-8 text-sm outline-none"
               style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", color: "#475569" }}>
-              <option value="all">All statuses</option>
+              <option value="all">Toate statusurile</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
@@ -361,14 +361,14 @@ export default function TeacherBooksPage() {
           </div>
         ) : books.length === 0 ? (
           <div className="flex items-center justify-center py-14 text-center">
-            <p className="text-sm" style={{ color: "#94a3b8" }}>No books found for the selected filters.</p>
+            <p className="text-sm" style={{ color: "#94a3b8" }}>Nu am găsit cărți pentru filtrele selectate.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: "1px solid #f1f5f9" }}>
-                  {["Title", "Level", "Author", "Status", "Actions"].map((h) => (
+                  {["Titlu", "Nivel", "Autor", "Status", "Acțiuni"].map((h) => (
                     <th key={h} className="px-5 py-3 text-left">
                       <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#94a3b8" }}>{h}</span>
                     </th>
@@ -401,7 +401,7 @@ export default function TeacherBooksPage() {
                           ? { background: "rgba(16,185,129,0.1)", color: "#059669" }
                           : { background: "#f1f5f9", color: "#94a3b8" }}
                       >
-                        {book.isActive ? "Active" : "Inactive"}
+                        {book.isActive ? "Activă" : "Inactivă"}
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
@@ -411,7 +411,7 @@ export default function TeacherBooksPage() {
                           style={{ background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }}
                           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#e2e8f0" }}
                           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "#f1f5f9" }}>
-                          Edit
+                          Editează
                         </button>
                         {book.isActive && (
                           <button type="button" onClick={() => handleDeactivate(book.id)}
@@ -419,7 +419,7 @@ export default function TeacherBooksPage() {
                             style={{ background: "rgba(239,68,68,0.06)", color: "#dc2626", border: "1px solid rgba(239,68,68,0.15)" }}
                             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.12)" }}
                             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.06)" }}>
-                            Deactivate
+                            Dezactivează
                           </button>
                         )}
                         <a href={book.resourceUrl} target="_blank" rel="noreferrer"

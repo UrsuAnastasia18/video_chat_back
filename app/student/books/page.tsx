@@ -39,12 +39,12 @@ export default function StudentBooksPage() {
         const payload = (await res.json()) as { books?: Book[]; error?: string };
 
         if (!res.ok) {
-          throw new Error(payload.error ?? "Failed to load books");
+          throw new Error(payload.error ?? "Nu am putut încărca materialele");
         }
 
         setBooks(payload.books ?? []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load books");
+        setError(err instanceof Error ? err.message : "Nu am putut încărca materialele");
       } finally {
         setLoading(false);
       }
@@ -56,25 +56,25 @@ export default function StudentBooksPage() {
   return (
     <section className="flex size-full flex-col gap-6 text-black">
       <StudentPageHeader
-        title="My Books"
-        subtitle="Books and PDF resources available for your current level."
+        title="Cărțile mele"
+        subtitle="Cărți și resurse PDF disponibile pentru nivelul tău curent."
       />
 
       <StudentHero
-        title="Books Library"
-        subtitle="Use these resources to practice reading, vocabulary, and grammar between lessons."
+        title="Biblioteca de cărți"
+        subtitle="Folosește aceste resurse pentru a exersa citirea, vocabularul și gramatica între lecții."
         rightSlot={
           <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center">
             <p className="text-2xl font-black leading-none text-white">{books.length}</p>
             <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white/45">
-              resources
+              resurse
             </p>
           </div>
         }
         chips={
           <>
-            <StudentChip>Student Library</StudentChip>
-            <StudentChip>Level-based Resources</StudentChip>
+            <StudentChip>Biblioteca elevului</StudentChip>
+            <StudentChip>Resurse după nivel</StudentChip>
           </>
         }
       />
@@ -85,12 +85,12 @@ export default function StudentBooksPage() {
         <StudentLoadingGrid cards={6} />
       ) : books.length === 0 ? (
         <StudentEmptyState
-          title="No books available yet"
-          description="Your teacher has not published books for your current level yet."
+          title="Încă nu există cărți disponibile"
+          description="Profesorul tău nu a publicat încă materiale pentru nivelul tău curent."
         />
       ) : (
         <StudentPanel
-          title="Available Books"
+          title="Cărți disponibile"
           rightSlot={
             <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-600">
               {books.length}
@@ -111,7 +111,7 @@ export default function StudentBooksPage() {
                   <p className="mt-2 text-sm text-slate-600">{book.description}</p>
                 ) : null}
                 <p className="mt-2 text-sm text-slate-500">
-                  Author: {book.author ?? "Unknown"}
+                  Autor: {book.author ?? "Necunoscut"}
                 </p>
 
                 <div className="mt-auto pt-4">
@@ -121,7 +121,7 @@ export default function StudentBooksPage() {
                     rel="noreferrer"
                     className="inline-flex rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
                   >
-                    Open PDF
+                    Deschide PDF-ul
                   </a>
                 </div>
               </article>

@@ -93,7 +93,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
           });
         }
       } catch {
-        toast("Try again");
+        toast("Încearcă din nou");
       }
     };
 
@@ -111,12 +111,12 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(data.error ?? "Failed to load lessons");
+          throw new Error(data.error ?? "Nu am putut încărca lecțiile");
         }
 
         setLessons((data.lessons ?? []) as LessonItem[]);
       } catch {
-        toast.error("Failed to load lessons");
+        toast.error("Nu am putut încărca lecțiile");
       } finally {
         setIsLessonsLoading(false);
       }
@@ -128,11 +128,11 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
   const noCallsMessage = useMemo(() => {
     switch (type) {
       case "ended":
-        return "No previous lessons";
+        return "Nu există lecții anterioare";
       case "recordings":
-        return "No recordings";
+        return "Nu există înregistrări";
       case "upcoming":
-        return "No upcoming or in-progress lessons";
+        return "Nu există lecții viitoare sau în desfășurare";
     }
   }, [type]);
 
@@ -148,12 +148,12 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
             <MeetingCard
               key={rec.url}
               icon="/icons/recording.svg"
-              title={rec.filename?.substring(0, 20) || "Recording"}
+              title={rec.filename?.substring(0, 20) || "Înregistrare"}
               date={new Date(rec.start_time).toLocaleString()}
               variant="banner"
               isPreviousMeeting={false}
               buttonIcon1="/icons/play.svg"
-              buttonText="Play"
+              buttonText="Redă"
               handleClick={() => router.push(rec.url)}
               link={rec.url}
             />
@@ -198,10 +198,10 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
                 variant="banner"
                 date={`${scheduledStart.toLocaleString()} - ${scheduledEnd.toLocaleString()}`}
                 isPreviousMeeting={type === "ended"}
-                buttonText="Open Meeting"
+                buttonText="Deschide ședința"
                 hideActions={false}
                 primaryDisabled={!hasCallLink}
-                emptyStateText={!hasCallLink ? "No call linked" : undefined}
+                emptyStateText={!hasCallLink ? "Nu există apel asociat" : undefined}
                 handleClick={() => {
                   if (!hasCallLink) {
                     return;
@@ -209,7 +209,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
                   router.push(meetingPath);
                 }}
                 link={shareLink}
-                secondaryButtonText={isTeacher ? "Open Lesson" : undefined}
+                secondaryButtonText={isTeacher ? "Deschide lecția" : undefined}
                 onSecondaryClick={
                   isTeacher
                     ? () => router.push(`/teacher/lessons/${lesson.id}`)
@@ -228,7 +228,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
               {inProgressLessons.length > 0 ? (
                 <div>
                   <p className="mb-2 text-xs font-bold uppercase tracking-widest text-emerald-700">
-                    In progress now
+                    În desfășurare acum
                   </p>
                   <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
                     {inProgressLessons.map((lesson) => renderLessonCard(lesson, true))}
@@ -239,7 +239,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
               {futureLessons.length > 0 ? (
                 <div>
                   <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">
-                    Upcoming
+                    Urmează
                   </p>
                   <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
                     {futureLessons.map((lesson) => renderLessonCard(lesson, false))}

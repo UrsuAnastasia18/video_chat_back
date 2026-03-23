@@ -63,11 +63,16 @@ const MeetingRoom = () => {
                     </div>
 
                     <DropdownMenuContent className="border-dark-1 bg-dark-1 text-white">
-                        {['Grid', 'Speaker-Left', 'Speaker-Right'].map((item, index) => (
+                        {['Grilă', 'Vorbitor-stânga', 'Vorbitor-dreapta'].map((item, index) => (
                             <div key={index}>
                                 <DropdownMenuItem className="cursor-pointer"
                                     onClick={() => {
-                                        setLayout(item.toLowerCase() as CallLayoutType)
+                                        const layoutMap: Record<string, CallLayoutType> = {
+                                            'Grilă': 'grid',
+                                            'Vorbitor-stânga': 'speaker-left',
+                                            'Vorbitor-dreapta': 'speaker-right',
+                                        }
+                                        setLayout(layoutMap[item])
                                     }}>
                                     {item}
                                 </DropdownMenuItem>

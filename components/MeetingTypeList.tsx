@@ -92,13 +92,13 @@ const MeetingTypeList = () => {
       try {
         const res = await fetch("/api/groups", { cache: "no-store" });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? "Failed to fetch groups");
+        if (!res.ok) throw new Error(data.error ?? "Nu am putut încărca grupele");
         const groups = (data.groups ?? []) as TeacherGroupOption[];
         setTeacherGroups(groups);
         setValues((prev) => ({ ...prev, groupId: prev.groupId || groups[0]?.id || "" }));
       } catch (error) {
-        console.error("Failed to load teacher groups:", error);
-        toast.error("Failed to load teacher groups");
+        console.error("Nu am putut încărca grupele profesorului:", error);
+        toast.error("Nu am putut încărca grupele profesorului");
       } finally {
         setGroupsLoading(false);
       }
@@ -112,8 +112,8 @@ const MeetingTypeList = () => {
     title: string,
     groupId?: string
   ) => {
-    if (!client) throw new Error("Stream client is not ready");
-    if (!user) throw new Error("User is not ready");
+    if (!client) throw new Error("Clientul Stream nu este pregătit");
+    if (!user) throw new Error("Utilizatorul nu este pregătit");
     const id = crypto.randomUUID();
     const call = client.call("default", id);
     const custom: Record<string, string> = { title, description };
@@ -121,7 +121,7 @@ const MeetingTypeList = () => {
     try {
       await call.getOrCreate({ data: { starts_at: new Date(startsAtIso).toISOString(), custom } });
     } catch (error) {
-      throw error instanceof Error ? error : new Error("Failed to create Stream call");
+      throw error instanceof Error ? error : new Error("Nu am putut crea apelul Stream");
     }
     return call;
   };
@@ -140,13 +140,13 @@ const MeetingTypeList = () => {
   };
 
   const createScheduledMeeting = async () => {
-    if (!isTeacher) { toast.error("Only teachers can schedule lessons."); return; }
+    if (!isTeacher) { toast.error("Doar profesorii pot programa lecții."); return; }
     const title = values.title.trim();
     const description = values.description.trim();
-    if (!title) { toast.error("Please add a lesson title"); return; }
-    if (!values.groupId) { toast.error("Please select a group"); return; }
-    if (!values.dateTime || !values.endDateTime) { toast.error("Please select start and end date"); return; }
-    if (values.dateTime >= values.endDateTime) { toast.error("End time must be after start time"); return; }
+    if (!title) { toast.error("Te rog adaugă un titlu pentru lecție"); return; }
+    if (!values.groupId) { toast.error("Te rog selectează o grupă"); return; }
+    if (!values.dateTime || !values.endDateTime) { toast.error("Te rog selectează data de început și de sfârșit"); return; }
+    if (values.dateTime >= values.endDateTime) { toast.error("Ora de sfârșit trebuie să fie după ora de început"); return; }
 
     try {
       const startsAtIso = values.dateTime.toISOString();
@@ -164,9 +164,9 @@ const MeetingTypeList = () => {
         }),
       });
       const lessonData = await lessonRes.json();
-      if (!lessonRes.ok) throw new Error(lessonData.error ?? "Failed to create lesson");
+      if (!lessonRes.ok) throw new Error(lessonData.error ?? "Nu am putut crea lecția");
       const lessonId: string | undefined = lessonData.lesson?.id;
-      if (!lessonId) throw new Error("Lesson created but response is missing lesson id");
+      if (!lessonId) throw new Error("Lecția a fost creată, dar răspunsul nu conține ID-ul lecției");
 
       let linkedCallId: string | null = null;
       const attachCallId = values.existingCallId.trim();
@@ -174,10 +174,10 @@ const MeetingTypeList = () => {
       const shouldAttach = values.callLinkMode === "attach";
 
       if (shouldAttach) {
-        if (!attachCallId) throw new Error("Please provide an existing call ID to attach.");
+        if (!attachCallId) throw new Error("Te rog introdu un ID de apel existent pentru asociere.");
         linkedCallId = attachCallId;
       } else if (shouldCreate) {
-        const call = await createStreamCall(startsAtIso, description || "Scheduled class meeting", title, values.groupId);
+        const call = await createStreamCall(startsAtIso, description || "Ședință programată pentru lecție", title, values.groupId);
         linkedCallId = call.id;
       }
 
@@ -188,25 +188,25 @@ const MeetingTypeList = () => {
           body: JSON.stringify({ streamCallId: linkedCallId }),
         });
         const patchData = await patchRes.json();
-        if (!patchRes.ok) throw new Error(patchData.error ?? "Failed to link call to lesson");
+        if (!patchRes.ok) throw new Error(patchData.error ?? "Nu am putut asocia apelul cu lecția");
       }
 
       setScheduledLessonResult({ lessonId, streamCallId: linkedCallId });
-      toast.success(linkedCallId ? "Lesson scheduled. Call linked." : "Lesson scheduled.");
+      toast.success(linkedCallId ? "Lecția a fost programată și apelul a fost asociat." : "Lecția a fost programată.");
     } catch (error) {
       console.error("createScheduledMeeting error:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to schedule");
+      toast.error(error instanceof Error ? error.message : "Nu am putut programa lecția");
     }
   };
 
   const createInstantMeeting = async () => {
     try {
-      const call = await createStreamCall(new Date().toISOString(), "Instant meeting", "Instant Meeting");
+      const call = await createStreamCall(new Date().toISOString(), "Ședință instant", "Ședință instant");
       router.push(`/meeting/${call.id}`);
-      toast.success("Meeting created");
+      toast.success("Ședința a fost creată");
     } catch (error) {
       console.error("createInstantMeeting error:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to create meeting");
+      toast.error(error instanceof Error ? error.message : "Nu am putut crea ședința");
     }
   };
 
@@ -220,8 +220,8 @@ const MeetingTypeList = () => {
       {canUseGeneralCallTools && (
         <HomeCard
           img="/icons/add-meeting.svg"
-          title="New Meeting"
-          description="Start an instant call"
+          title="Ședință nouă"
+          description="Pornește un apel instant"
           handleClick={() => setMeetingState("isInstantMeeting")}
           className="bg-orange-1"
         />
@@ -230,8 +230,8 @@ const MeetingTypeList = () => {
       {isTeacher && (
         <HomeCard
           img="/icons/schedule.svg"
-          title="Schedule Lesson"
-          description="Plan a lesson and optional call"
+          title="Programează lecție"
+          description="Planifică o lecție și, opțional, un apel"
           handleClick={() => setMeetingState("isScheduleMeeting")}
           className="bg-blue-1"
         />
@@ -240,8 +240,8 @@ const MeetingTypeList = () => {
       {isTeacher && (
         <HomeCard
           img="/icons/recordings.svg"
-          title="View Recordings"
-          description="Check lesson and call recordings"
+          title="Vezi înregistrările"
+          description="Verifică înregistrările lecțiilor și apelurilor"
           handleClick={() => router.push("/recordings")}
           className="bg-purple-1"
         />
@@ -250,8 +250,8 @@ const MeetingTypeList = () => {
       {canUseGeneralCallTools && (
         <HomeCard
           img="/icons/join-meeting.svg"
-          title="Join Meeting"
-          description="Join via invitation link"
+          title="Intră în ședință"
+          description="Intră folosind linkul de invitație"
           handleClick={() => setMeetingState("isJoiningMeeting")}
           className="bg-yellow-1"
         />
@@ -260,8 +260,8 @@ const MeetingTypeList = () => {
       {isStudent && (
         <HomeCard
           img="/icons/add-personal.svg"
-          title="Personal Room"
-          description="Open your personal room"
+          title="Camera personală"
+          description="Deschide camera ta personală"
           handleClick={() => router.push("/personal-room")}
           className="bg-blue-1"
         />
@@ -272,28 +272,28 @@ const MeetingTypeList = () => {
         <MeetingModal
           isOpen={meetingState === "isScheduleMeeting"}
           onClose={() => { setMeetingState(undefined); resetScheduleState(); }}
-          title="Schedule a Lesson"
+          title="Programează o lecție"
           handleClick={createScheduledMeeting}
-          buttonText="Create Lesson"
+          buttonText="Creează lecția"
         >
           {!isTeacher ? (
-            <p className="text-sm" style={{ color: "#ef4444" }}>Only teachers can schedule lessons.</p>
+            <p className="text-sm" style={{ color: "#ef4444" }}>Doar profesorii pot programa lecții.</p>
           ) : (
             <>
               <div className={fieldWrap}>
-                <label style={labelStyle}>Lesson title</label>
+                <label style={labelStyle}>Titlul lecției</label>
                 <input
                   style={inputStyle}
                   value={values.title}
                   onChange={(e) => setValues((p) => ({ ...p, title: e.target.value }))}
-                  placeholder="e.g. A1 Speaking Practice"
+                  placeholder="ex. Practică de vorbire A1"
                   onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4f8ef7"; }}
                   onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = "#e2e8f0"; }}
                 />
               </div>
 
               <div className={fieldWrap}>
-                <label style={labelStyle}>Select group</label>
+                <label style={labelStyle}>Selectează grupa</label>
                 <select
                   style={selectStyle}
                   value={values.groupId}
@@ -301,7 +301,7 @@ const MeetingTypeList = () => {
                   disabled={groupsLoading || teacherGroups.length === 0}
                 >
                   {teacherGroups.length === 0 ? (
-                    <option value="">{groupsLoading ? "Loading groups..." : "No groups available"}</option>
+                    <option value="">{groupsLoading ? "Se încarcă grupele..." : "Nu există grupe disponibile"}</option>
                   ) : (
                     teacherGroups.map((g) => (
                       <option key={g.id} value={g.id}>{g.name} ({g.level.code})</option>
@@ -311,7 +311,7 @@ const MeetingTypeList = () => {
               </div>
 
               <div className={fieldWrap}>
-                <label style={labelStyle}>Description (optional)</label>
+                <label style={labelStyle}>Descriere (opțional)</label>
                 <Textarea
                   value={values.description}
                   onChange={(e) => setValues((p) => ({ ...p, description: e.target.value }))}
@@ -322,26 +322,26 @@ const MeetingTypeList = () => {
               </div>
 
               <div className={fieldWrap}>
-                <label style={labelStyle}>Call link mode</label>
+                <label style={labelStyle}>Modul de asociere a apelului</label>
                 <select
                   style={selectStyle}
                   value={values.callLinkMode}
                   onChange={(e) => setValues((p) => ({ ...p, callLinkMode: e.target.value as CallLinkMode }))}
                 >
-                  <option value="create">Create a new call now</option>
-                  <option value="attach">Attach existing call ID</option>
-                  <option value="none">No call link yet</option>
+                  <option value="create">Creează acum un apel nou</option>
+                  <option value="attach">Asociază un ID de apel existent</option>
+                  <option value="none">Fără link de apel momentan</option>
                 </select>
               </div>
 
               {values.callLinkMode === "attach" && (
                 <div className={fieldWrap}>
-                  <label style={labelStyle}>Existing call ID</label>
+                  <label style={labelStyle}>ID apel existent</label>
                   <input
                     style={inputStyle}
                     value={values.existingCallId}
                     onChange={(e) => setValues((p) => ({ ...p, existingCallId: e.target.value }))}
-                    placeholder="Paste Stream call ID"
+                    placeholder="Lipește ID-ul apelului Stream"
                     onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4f8ef7"; }}
                     onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = "#e2e8f0"; }}
                   />
@@ -349,14 +349,14 @@ const MeetingTypeList = () => {
               )}
 
               <div className={fieldWrap}>
-                <label style={labelStyle}>Start date & time</label>
+                <label style={labelStyle}>Data și ora de început</label>
                 <ReactDatePicker
                   selected={values.dateTime}
                   onChange={(date: Date | null) => setValues((p) => ({ ...p, dateTime: date ?? new Date() }))}
                   showTimeSelect
                   timeFormat="HH:mm"
                   timeIntervals={15}
-                  timeCaption="time"
+                  timeCaption="ora"
                   dateFormat="MMM d, yyyy HH:mm"
                   className="w-full rounded-xl px-3 py-2 text-sm outline-none"
                   wrapperClassName="w-full"
@@ -366,14 +366,14 @@ const MeetingTypeList = () => {
               </div>
 
               <div className={fieldWrap}>
-                <label style={labelStyle}>End date & time</label>
+                <label style={labelStyle}>Data și ora de sfârșit</label>
                 <ReactDatePicker
                   selected={values.endDateTime}
                   onChange={(date: Date | null) => setValues((p) => ({ ...p, endDateTime: date ?? new Date() }))}
                   showTimeSelect
                   timeFormat="HH:mm"
                   timeIntervals={15}
-                  timeCaption="time"
+                  timeCaption="ora"
                   dateFormat="MMM d, yyyy HH:mm"
                   className="w-full rounded-xl px-3 py-2 text-sm outline-none"
                   wrapperClassName="w-full"
@@ -386,21 +386,21 @@ const MeetingTypeList = () => {
         <MeetingModal
           isOpen={meetingState === "isScheduleMeeting"}
           onClose={() => { setMeetingState(undefined); resetScheduleState(); }}
-          title="Lesson Scheduled!"
+          title="Lecție programată!"
           className="text-center"
           handleClick={() => {
             if (!scheduledLessonResult.streamCallId) { setMeetingState(undefined); resetScheduleState(); return; }
-            if (!meetingLink) { toast.error("Meeting link is not available"); return; }
+            if (!meetingLink) { toast.error("Linkul ședinței nu este disponibil"); return; }
             navigator.clipboard.writeText(meetingLink);
-            toast.success("Link copied");
+            toast.success("Link copiat");
           }}
           image="/icons/checked.svg"
           buttonIcon={scheduledLessonResult.streamCallId ? "/icons/copy.svg" : undefined}
-          buttonText={scheduledLessonResult.streamCallId ? "Copy Meeting Link" : "Close"}
+          buttonText={scheduledLessonResult.streamCallId ? "Copiază linkul ședinței" : "Închide"}
           description={
             scheduledLessonResult.streamCallId
-              ? "Lesson scheduled and call linked."
-              : "Lesson scheduled without a linked call."
+              ? "Lecția a fost programată și apelul a fost asociat."
+              : "Lecția a fost programată fără un apel asociat."
           }
         />
       )}
@@ -409,9 +409,9 @@ const MeetingTypeList = () => {
       <MeetingModal
         isOpen={meetingState === "isInstantMeeting"}
         onClose={() => setMeetingState(undefined)}
-        title="Start Instant Meeting"
+        title="Pornește o ședință instant"
         className="text-center"
-        buttonText="Start Meeting"
+        buttonText="Pornește ședința"
         handleClick={createInstantMeeting}
       />
 
@@ -419,23 +419,23 @@ const MeetingTypeList = () => {
       <MeetingModal
         isOpen={meetingState === "isJoiningMeeting"}
         onClose={() => setMeetingState(undefined)}
-        title="Join Meeting"
-        buttonText="Join"
+        title="Intră în ședință"
+        buttonText="Intră"
         handleClick={() => {
           if (values.existingCallId.trim()) {
             router.push(`/meeting/${values.existingCallId.trim()}`);
           } else {
-            toast.error("Please enter a meeting link or ID");
+            toast.error("Te rog introdu un link sau un ID de ședință");
           }
         }}
       >
         <div className={fieldWrap}>
-          <label style={labelStyle}>Meeting link or call ID</label>
+          <label style={labelStyle}>Linkul ședinței sau ID-ul apelului</label>
           <input
             style={inputStyle}
             value={values.existingCallId}
             onChange={(e) => setValues((p) => ({ ...p, existingCallId: e.target.value }))}
-            placeholder="Paste link or call ID"
+            placeholder="Lipește linkul sau ID-ul apelului"
             onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4f8ef7"; }}
             onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = "#e2e8f0"; }}
           />

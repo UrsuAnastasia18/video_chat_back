@@ -53,7 +53,7 @@ export default function GroupsPage() {
             const data = await res.json();
             setGroups(data.groups ?? []);
         } catch {
-            console.error("Failed to fetch groups");
+            console.error("Nu am putut încărca grupele");
         } finally {
             setLoading(false);
         }
@@ -75,9 +75,9 @@ export default function GroupsPage() {
                 <PremiumTexture />
                 <div className="relative z-10 flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-[28px] font-bold leading-tight tracking-tight">My Groups</h1>
+                        <h1 className="text-[28px] font-bold leading-tight tracking-tight">Grupele mele</h1>
                         <p className="mt-1 text-sm text-white/70">
-                            Manage your study groups and their students
+                            Gestionează grupele tale de studiu și cursanții din ele
                         </p>
                     </div>
 
@@ -96,7 +96,7 @@ export default function GroupsPage() {
                         >
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
-                        Create Group
+                        Creează grupă
                     </button>
                 </div>
             </div>
@@ -164,7 +164,7 @@ function GroupCard({ group }: { group: Group }) {
                             {group.name}
                         </h3>
                         <p className="mt-1 text-xs font-medium text-white/70">
-                            Level: {group.level.code} - {group.level.title}
+                            Nivel: {group.level.code} - {group.level.title}
                         </p>
                         {group.description && (
                             <p
@@ -212,7 +212,7 @@ function GroupCard({ group }: { group: Group }) {
                             <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
                         </svg>
                         {group._count.memberships}{" "}
-                        {group._count.memberships === 1 ? "student" : "students"}
+                        {group._count.memberships === 1 ? "elev" : "elevi"}
                     </span>
                 </div>
             </div>
@@ -247,10 +247,10 @@ function EmptyState({ onCreateClick }: { onCreateClick: () => void }) {
                 </svg>
             </div>
             <h3 className="relative z-10 text-lg font-semibold">
-                No groups yet
+                Încă nu există grupe
             </h3>
             <p className="relative z-10 mt-2 max-w-xs text-sm text-white/70">
-                Create your first study group to start organizing your students.
+                Creează prima ta grupă de studiu ca să începi să îți organizezi elevii.
             </p>
             <button
                 onClick={onCreateClick}
@@ -267,7 +267,7 @@ function EmptyState({ onCreateClick }: { onCreateClick: () => void }) {
                 >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
-                Create your first group
+                Creează prima grupă
             </button>
         </div>
     );

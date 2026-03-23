@@ -41,7 +41,7 @@ const MobileNav = () => {
             src="/icons/logo.svg"
             width={32}
             height={32}
-            alt="English logo"
+            alt="Logo Hello English"
             className='max-sm:size-10'
             />
           <p className="text-[26px] font-extrabold text-amber-950 ">Hello English</p>

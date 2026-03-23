@@ -56,12 +56,12 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
                 const res = await fetch("/api/levels");
                 const data = await res.json();
                 if (!res.ok) {
-                    setLevelsError(data.error ?? "Failed to load levels.");
+                    setLevelsError(data.error ?? "Nu am putut încărca nivelurile.");
                     return;
                 }
                 setLevels(data.levels ?? []);
             } catch {
-                setLevelsError("Failed to load levels.");
+                setLevelsError("Nu am putut încărca nivelurile.");
             }
         };
 
@@ -79,11 +79,11 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
     const handleSubmit = async () => {
         const trimmedName = name.trim();
         if (!trimmedName) {
-            setError("Group name is required.");
+            setError("Numele grupei este obligatoriu.");
             return;
         }
         if (!levelId) {
-            setError("Group level is required.");
+            setError("Nivelul grupei este obligatoriu.");
             return;
         }
         setLoading(true);
@@ -100,12 +100,12 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
             });
             const data = await res.json();
             if (!res.ok) {
-                setError(data.error ?? "Something went wrong.");
+                setError(data.error ?? "A apărut o eroare.");
                 return;
             }
             onCreated({ ...data.group, _count: { memberships: 0 } });
         } catch {
-            setError("Failed to create group. Please try again.");
+            setError("Nu am putut crea grupa. Te rog încearcă din nou.");
         } finally {
             setLoading(false);
         }
@@ -148,7 +148,7 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
                             </svg>
                         </div>
                         <h2 className="text-base font-semibold" style={{ color: '#1e293b' }}>
-                            Create New Group
+                            Creează o grupă nouă
                         </h2>
                     </div>
                     <button
@@ -169,7 +169,7 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
                     {/* Name */}
                     <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#64748b' }}>
-                            Group Name <span style={{ color: '#ef4444' }}>*</span>
+                            Numele grupei <span style={{ color: '#ef4444' }}>*</span>
                         </label>
                         <input
                             ref={nameRef}
@@ -177,7 +177,7 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
                             value={name}
                             onChange={(e) => { setName(e.target.value); if (error) setError(null); }}
                             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                            placeholder="e.g. Advanced B2 – Monday"
+                            placeholder="ex. B2 avansați – Luni"
                             className="w-full rounded-xl px-4 py-2.5 text-sm outline-none transition-all"
                             style={{
                                 background: '#f8fafc',
@@ -208,12 +208,12 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
                     {/* Description */}
                     <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#64748b' }}>
-                            Description <span className="normal-case font-normal" style={{ color: '#94a3b8' }}>(optional)</span>
+                            Descriere <span className="normal-case font-normal" style={{ color: '#94a3b8' }}>(opțional)</span>
                         </label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Brief description of this group's focus or schedule..."
+                            placeholder="Scurtă descriere a focusului sau programului grupei..."
                             rows={3}
                             className="w-full resize-none rounded-xl px-4 py-2.5 text-sm outline-none transition-all"
                             style={{
@@ -235,7 +235,7 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
                     {/* Level */}
                     <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#64748b' }}>
-                            Group Level <span style={{ color: '#ef4444' }}>*</span>
+                            Nivelul grupei <span style={{ color: '#ef4444' }}>*</span>
                         </label>
                         <select
                             value={levelId}
@@ -247,7 +247,7 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
                                 color: '#1e293b',
                             }}
                         >
-                            <option value="">Select level</option>
+                            <option value="">Selectează nivelul</option>
                             {levels.map((level) => (
                                 <option key={level.id} value={level.id}>
                                     {level.code} - {level.title}
@@ -275,7 +275,7 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
                         onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#f1f5f9' }}
                         onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                     >
-                        Cancel
+                        Anulează
                     </button>
                     <button
                         onClick={handleSubmit}
@@ -286,14 +286,14 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
                         {loading ? (
                             <>
                                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                Creating...
+                                Se creează...
                             </>
                         ) : (
                             <>
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
-                                Create Group
+                                Creează grupa
                             </>
                         )}
                     </button>

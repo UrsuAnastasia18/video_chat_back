@@ -27,7 +27,7 @@ const Navbar = () => {
             src="/icons/logo.svg"
             width={22}
             height={22}
-            alt="Hello English logo"
+            alt="Logo Hello English"
           />
         </div>
         <div className="flex items-baseline gap-1.5 max-sm:hidden">

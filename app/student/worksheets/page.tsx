@@ -52,7 +52,7 @@ export default function StudentWorksheetsPage() {
         // Fetch active worksheets for student's level
         const res = await fetch("/api/worksheets?isActive=true");
         const data = (await res.json()) as { worksheets?: Worksheet[]; error?: string };
-        if (!res.ok) throw new Error(data.error ?? "Failed to load worksheets");
+        if (!res.ok) throw new Error(data.error ?? "Nu am putut încărca fișele");
         const wsList = data.worksheets ?? [];
         setWorksheets(wsList);
 
@@ -95,7 +95,7 @@ export default function StudentWorksheetsPage() {
         }
         setStatuses(statusMap);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load");
+        setError(e instanceof Error ? e.message : "Nu am putut încărca datele");
       } finally {
         setLoading(false);
       }
@@ -114,20 +114,20 @@ export default function StudentWorksheetsPage() {
       />
 
       <StudentHero
-        title="Worksheet Practice"
+        title="Exersare prin fișe"
         subtitle="Consolidează lecțiile prin exerciții structurate și urmărește progresul tău."
         rightSlot={
           <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center">
             <p className="text-2xl font-black leading-none text-white">{worksheets.length}</p>
             <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white/45">
-              worksheets
+              fișe
             </p>
           </div>
         }
         chips={
           <>
-            <StudentChip>Pending: {pending.length}</StudentChip>
-            <StudentChip>Completed: {completed.length}</StudentChip>
+            <StudentChip>De completat: {pending.length}</StudentChip>
+            <StudentChip>Completate: {completed.length}</StudentChip>
           </>
         }
       />

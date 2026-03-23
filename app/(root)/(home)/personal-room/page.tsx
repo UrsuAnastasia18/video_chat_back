@@ -78,55 +78,55 @@ const PersonalRoom = () => {
     router.push(`/meeting/${meetingId}?personal=true`);
   };
 
-  const roomTopic = `${user?.username ?? "My"}'s Meeting Room`;
+  const roomTopic = `Camera de ședințe a lui ${user?.username ?? "mine"}`;
 
   return (
     <section className="flex size-full flex-col gap-6 text-black">
       <div>
-        <h1 className="text-3xl font-bold">Personal Room</h1>
+        <h1 className="text-3xl font-bold">Camera personală</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Your private space for instant calls and direct invitations.
+          Spațiul tău privat pentru apeluri instant și invitații directe.
         </p>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[1.35fr_1fr]">
         <PremiumPanel>
-          <h2 className="text-lg font-semibold text-white">Room Details</h2>
+          <h2 className="text-lg font-semibold text-white">Detalii cameră</h2>
           <p className="mt-1 text-sm text-white/70">
-            Share these details when someone needs to join your room.
+            Trimite aceste detalii când cineva trebuie să intre în camera ta.
           </p>
 
           <div className="mt-4 space-y-3">
-            <DetailItem label="Topic" value={roomTopic} />
-            <DetailItem label="Meeting ID" value={meetingId ?? "Loading..."} mono />
-            <DetailItem label="Invite Link" value={meetingLink} mono />
+            <DetailItem label="Subiect" value={roomTopic} />
+            <DetailItem label="ID ședință" value={meetingId ?? "Se încarcă..."} mono />
+            <DetailItem label="Link invitație" value={meetingLink} mono />
           </div>
         </PremiumPanel>
 
         <PremiumPanel>
-          <h2 className="text-lg font-semibold text-white">Meeting Actions</h2>
+          <h2 className="text-lg font-semibold text-white">Acțiuni ședință</h2>
           <p className="mt-1 text-sm text-white/70">
-            Start your room or copy the invitation for guests.
+            Pornește camera sau copiază invitația pentru participanți.
           </p>
 
           <div className="mt-5 flex flex-col gap-3">
             <Button className="bg-blue-1 py-5 text-sm font-semibold hover:bg-blue-1/90" onClick={startRoom}>
-              Start Meeting
+              Pornește ședința
             </Button>
             <Button
               className="bg-white/10 py-5 text-sm font-semibold text-white hover:bg-white/20"
               onClick={() => {
                 navigator.clipboard.writeText(meetingLink);
-                toast.success("Invitation link copied");
+                toast.success("Linkul de invitație a fost copiat");
               }}
             >
-              Copy Invitation
+              Copiază invitația
             </Button>
           </div>
 
           <div className="mt-5 rounded-lg border border-white/15 bg-white/10 p-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-white/65">
-              Invitation Info
+              Informații invitație
             </p>
             <p className="mt-1 break-all text-xs text-white/85">{meetingLink}</p>
           </div>

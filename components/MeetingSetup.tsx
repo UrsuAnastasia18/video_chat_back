@@ -20,14 +20,14 @@ const MeetingSetup = ({setIsSetupComplete}:{setIsSetupComplete: (value : boolean
         }
 
         if(!call) {
-            throw new Error('usecall must be used within StreamCall component')
+            throw new Error('useCall trebuie folosit în interiorul componentei StreamCall')
         }
 
     }, [isMicCamToggledOn, call?.camera, call?.microphone])
 
     return(
         <div className="flex h-screen w-full flex-col items-center justify-center gap-3 text-white">
-            <h1 className="text-2xl font-bold">Setup</h1>
+            <h1 className="text-2xl font-bold">Configurare</h1>
                 <VideoPreview />
                 <div className="flex h-16 items-center justify-center gap-3">
                     <label className="flex items-center justify-center gap-2 font-medium">
@@ -36,7 +36,7 @@ const MeetingSetup = ({setIsSetupComplete}:{setIsSetupComplete: (value : boolean
                         checked={isMicCamToggledOn}
                         onChange={(e) => setIsMicCamToggledOn (e.target.checked)}
                         />
-                        Join with mic and camera off
+                        Intră cu microfonul și camera oprite
                     </label>
                     <DeviceSettings/>
                 </div>
@@ -45,7 +45,7 @@ const MeetingSetup = ({setIsSetupComplete}:{setIsSetupComplete: (value : boolean
 
                     setIsSetupComplete(true);
                 }}>
-                Join Meeting
+                Intră în ședință
                 </Button>
         </div>
     )

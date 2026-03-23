@@ -47,12 +47,12 @@ export default function StudentGradesPage() {
         };
 
         if (!res.ok) {
-          throw new Error(payload.error ?? "Failed to load grades");
+          throw new Error(payload.error ?? "Nu am putut încărca notele");
         }
 
         setGrades(payload.grades ?? []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load grades");
+        setError(err instanceof Error ? err.message : "Nu am putut încărca notele");
       } finally {
         setLoading(false);
       }
@@ -64,25 +64,25 @@ export default function StudentGradesPage() {
   return (
     <section className="flex size-full flex-col gap-6 text-black">
       <StudentPageHeader
-        title="My Grades"
-        subtitle="Track worksheet and lesson grades in one place."
+        title="Notele mele"
+        subtitle="Urmărește notele la fișe și lecții într-un singur loc."
       />
 
       <StudentHero
-        title="Academic Progress"
-        subtitle="See your recorded grades from worksheets and teacher evaluations."
+        title="Progres academic"
+        subtitle="Vezi notele înregistrate din fișe și evaluările profesorului."
         rightSlot={
           <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center">
             <p className="text-2xl font-black leading-none text-white">{grades.length}</p>
             <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white/45">
-              grades
+              note
             </p>
           </div>
         }
         chips={
           <>
-            <StudentChip>Worksheet Auto</StudentChip>
-            <StudentChip>Teacher Manual</StudentChip>
+            <StudentChip>Fișe automate</StudentChip>
+            <StudentChip>Evaluare profesor</StudentChip>
           </>
         }
       />
@@ -93,12 +93,12 @@ export default function StudentGradesPage() {
         <StudentLoadingGrid cards={6} />
       ) : grades.length === 0 ? (
         <StudentEmptyState
-          title="No grades yet"
-          description="Your grades will appear here after worksheet submissions or teacher evaluation."
+          title="Încă nu există note"
+          description="Notele tale vor apărea aici după trimiterea fișelor sau evaluarea profesorului."
         />
       ) : (
         <StudentPanel
-          title="Grades History"
+          title="Istoric note"
           rightSlot={
             <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-600">
               {grades.length}
@@ -108,12 +108,12 @@ export default function StudentGradesPage() {
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {grades.map((grade) => {
               const typeLabel =
-                grade.type === "WORKSHEET_AUTO" ? "Worksheet Auto" : "Oral Manual";
+                grade.type === "WORKSHEET_AUTO" ? "Fișă automată" : "Oral manual";
               const sourceLabel = grade.worksheetSubmission?.worksheet?.title
-                ? `Worksheet: ${grade.worksheetSubmission.worksheet.title}`
+                ? `Fișă: ${grade.worksheetSubmission.worksheet.title}`
                 : grade.lesson?.title
-                  ? `Lesson: ${grade.lesson.title}`
-                  : "Source unavailable";
+                  ? `Lecție: ${grade.lesson.title}`
+                  : "Sursa nu este disponibilă";
 
               return (
                 <article
@@ -124,16 +124,16 @@ export default function StudentGradesPage() {
                     {typeLabel}
                   </p>
                   <h2 className="mt-2 text-lg font-semibold text-slate-900">
-                    Grade: {grade.value}
+                    Notă: {grade.value}
                   </h2>
                   <p className="mt-2 text-sm text-slate-600">{sourceLabel}</p>
                   <p className="mt-2 text-sm text-slate-500">
-                    Graded: {new Date(grade.gradedAt).toLocaleString()}
+                    Notată la: {new Date(grade.gradedAt).toLocaleString()}
                   </p>
                   {grade.comment ? (
                     <p className="mt-2 text-sm text-slate-600">{grade.comment}</p>
                   ) : (
-                    <p className="mt-2 text-sm text-slate-500">No comment.</p>
+                    <p className="mt-2 text-sm text-slate-500">Fără comentariu.</p>
                   )}
                 </article>
               );

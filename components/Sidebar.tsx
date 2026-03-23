@@ -137,7 +137,7 @@ const Sidebar = () => {
       {/* Bottom subtle label */}
       <div className="px-5 pb-5 max-lg:hidden">
         <p className="text-[11px] text-white/15 font-medium uppercase tracking-widest">
-          Hello English Platform
+          Platforma Hello English
         </p>
       </div>
     </section>

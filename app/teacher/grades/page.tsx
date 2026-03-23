@@ -66,7 +66,7 @@ export default function TeacherGradesPage() {
       setGroups(fetchedGroups);
       setGroupFilter((prev) => prev || fetchedGroups[0]?.id || "");
     } catch {
-      setError("Failed to load groups");
+      setError("Nu am putut încărca grupele");
     } finally {
       setGroupsLoading(false);
     }
@@ -84,7 +84,7 @@ export default function TeacherGradesPage() {
       if (d.error) throw new Error(d.error);
       setStudents(d.students ?? []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load grades");
+      setError(e instanceof Error ? e.message : "Nu am putut încărca notele");
     } finally {
       setStudentsLoading(false);
     }
@@ -182,7 +182,7 @@ export default function TeacherGradesPage() {
         <select value={groupFilter} onChange={(e) => setGroupFilter(e.target.value)}
           className="rounded-xl px-3 py-2 text-sm font-medium outline-none"
           style={{ background: "#fff", border: "1.5px solid #e2e8f0", color: "#475569", cursor: "pointer", minWidth: "180px" }}>
-          {groups.length === 0 ? <option value="">No groups available yet</option> : null}
+          {groups.length === 0 ? <option value="">Încă nu există grupe disponibile</option> : null}
           {groups.map((g) => <option key={g.id} value={g.id}>{g.name} ({g.level.code})</option>)}
         </select>
 

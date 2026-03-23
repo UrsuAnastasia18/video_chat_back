@@ -47,7 +47,7 @@ const Home = () => {
             >
               <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#10b981' }} />
               <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                Hello English Platform
+                Platforma Hello English
               </span>
             </div>
           </div>

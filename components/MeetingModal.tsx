@@ -98,7 +98,7 @@ const MeetingModal = ({
             {buttonIcon && (
               <Image src={buttonIcon} alt="button icon" width={14} height={14} className="mr-1.5" />
             )}
-            {buttonText || 'Confirm'}
+            {buttonText || 'Confirmă'}
           </Button>
         </div>
       </DialogContent>

@@ -124,7 +124,7 @@ export default function TeacherLessonGradesPage() {
       throw new Error(studentsPayload.error ?? "Failed to load lesson students");
     }
     if (!gradesRes.ok) {
-      throw new Error(gradesPayload.error ?? "Failed to load lesson grades");
+      throw new Error(gradesPayload.error ?? "Nu am putut încărca notele lecției");
     }
 
     setLesson(lessonPayload.lesson ?? null);
@@ -342,12 +342,12 @@ export default function TeacherLessonGradesPage() {
         error?: string;
       };
       if (!response.ok) {
-        throw new Error(payload.error ?? "Failed to update attendance");
+        throw new Error(payload.error ?? "Nu am putut actualiza prezența");
       }
       await loadAttendance(lessonId);
     } catch (err) {
       setAttendanceError(
-        err instanceof Error ? err.message : "Failed to update attendance"
+        err instanceof Error ? err.message : "Nu am putut actualiza prezența"
       );
     } finally {
       setAttendanceUpdating((prev) => ({ ...prev, [targetUserId]: false }));
@@ -357,9 +357,9 @@ export default function TeacherLessonGradesPage() {
   return (
     <section className="flex size-full flex-col gap-6 text-black">
       <div>
-        <h1 className="text-3xl font-bold">Lesson Hub</h1>
+        <h1 className="text-3xl font-bold">Panoul lecției</h1>
         <p className="text-sm text-slate-500">
-          View lesson context, meeting link, recordings, and manual grades in one place.
+          Vezi contextul lecției, linkul ședinței, înregistrările și notele manuale într-un singur loc.
         </p>
       </div>
 
@@ -370,23 +370,23 @@ export default function TeacherLessonGradesPage() {
       ) : null}
 
       {loading ? (
-        <p className="text-sm text-slate-500">Loading lesson data...</p>
+        <p className="text-sm text-slate-500">Se încarcă datele lecției...</p>
       ) : !lesson ? (
         <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
-          Lesson not found.
+          Lecția nu a fost găsită.
         </div>
       ) : (
         <>
           <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <h2 className="text-xl font-semibold text-slate-900">Lesson Overview</h2>
+            <h2 className="text-xl font-semibold text-slate-900">Prezentare generală</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Academic context for this scheduled lesson.
+              Contextul academic pentru această lecție programată.
             </p>
 
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Lesson Title
+                  Titlul lecției
                 </p>
                 <p className="mt-1 text-base font-semibold text-slate-900">{lesson.title}</p>
               </div>
@@ -398,13 +398,13 @@ export default function TeacherLessonGradesPage() {
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Group
+                  Grupă
                 </p>
                 <p className="mt-1 text-base text-slate-800">{lesson.group.name}</p>
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Level
+                  Nivel
                 </p>
                 <p className="mt-1 text-base text-slate-800">
                   {lesson.group.level.code} - {lesson.group.level.title}
@@ -412,7 +412,7 @@ export default function TeacherLessonGradesPage() {
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Scheduled Start
+                  Începe la
                 </p>
                 <p className="mt-1 text-base text-slate-800">
                   {formatDateTime(lesson.scheduledStart)}
@@ -420,7 +420,7 @@ export default function TeacherLessonGradesPage() {
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Scheduled End
+                  Se încheie la
                 </p>
                 <p className="mt-1 text-base text-slate-800">
                   {formatDateTime(lesson.scheduledEnd)}
@@ -430,42 +430,42 @@ export default function TeacherLessonGradesPage() {
 
             <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Description
+                Descriere
               </p>
               <p className="mt-1 text-sm text-slate-700">
-                {lesson.description?.trim() ? lesson.description : "No description provided."}
+                {lesson.description?.trim() ? lesson.description : "Nu a fost adăugată nicio descriere."}
               </p>
             </div>
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <h3 className="text-lg font-semibold text-slate-900">Linked Video Call</h3>
+            <h3 className="text-lg font-semibold text-slate-900">Apel video asociat</h3>
             <p className="mt-1 text-sm text-slate-500">
-              The call linked to this lesson is used for joining and recordings.
+              Apelul asociat acestei lecții este folosit pentru acces și înregistrări.
             </p>
 
             {lesson.streamCallId ? (
               <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-emerald-700">Call linked</p>
+                <p className="text-sm font-semibold text-emerald-700">Apel asociat</p>
                 <a
                   href={`/meeting/${lesson.streamCallId}`}
                   className="mt-3 inline-flex rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
                 >
-                  Open Meeting
+                  Deschide ședința
                 </a>
-                <p className="mt-3 text-xs text-slate-500">Call ID: {lesson.streamCallId}</p>
+                <p className="mt-3 text-xs text-slate-500">ID apel: {lesson.streamCallId}</p>
               </div>
             ) : (
               <div className="mt-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
-                No call linked yet.
+                Încă nu există un apel asociat.
               </div>
             )}
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <h3 className="text-lg font-semibold text-slate-900">Attendance</h3>
+            <h3 className="text-lg font-semibold text-slate-900">Prezență</h3>
             <p className="mt-1 text-sm text-slate-500">
-              Manually mark each student as present or absent for this lesson.
+              Marchează manual fiecare elev ca prezent sau absent pentru această lecție.
             </p>
 
             {attendanceError ? (
@@ -473,10 +473,10 @@ export default function TeacherLessonGradesPage() {
             ) : null}
 
             {attendanceLoading ? (
-              <p className="mt-3 text-sm text-slate-500">Loading attendance...</p>
+              <p className="mt-3 text-sm text-slate-500">Se încarcă prezența...</p>
             ) : attendance.length === 0 ? (
               <p className="mt-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
-                No active students available for attendance.
+                Nu există elevi activi disponibili pentru prezență.
               </p>
             ) : (
               <ul className="mt-4 space-y-3">
@@ -504,11 +504,11 @@ export default function TeacherLessonGradesPage() {
                             </span>
                             {row.markedAt ? (
                               <span className="text-xs text-slate-500">
-                                Marked: {formatDateTime(row.markedAt)}
+                                Marcat: {formatDateTime(row.markedAt)}
                               </span>
                             ) : (
                               <span className="text-xs text-slate-500">
-                                Not marked yet
+                                Încă nemarcat
                               </span>
                             )}
                           </div>
@@ -521,7 +521,7 @@ export default function TeacherLessonGradesPage() {
                             onClick={() => handleMarkAttendance(row.userId, "PRESENT")}
                             className="rounded bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
                           >
-                            Present
+                            Prezent
                           </button>
                           <button
                             type="button"
@@ -541,19 +541,19 @@ export default function TeacherLessonGradesPage() {
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <h3 className="text-lg font-semibold text-slate-900">Lesson Recordings</h3>
+            <h3 className="text-lg font-semibold text-slate-900">Înregistrările lecției</h3>
             <p className="mt-1 text-sm text-slate-500">
-              Recordings from the linked lesson call.
+              Înregistrări din apelul asociat lecției.
             </p>
             {recordingsLoading ? (
-              <p className="mt-2 text-sm text-slate-500">Loading recordings...</p>
+              <p className="mt-2 text-sm text-slate-500">Se încarcă înregistrările...</p>
             ) : recordingsError ? (
               <p className="mt-2 text-sm text-red-600">{recordingsError}</p>
             ) : recordings.length === 0 ? (
               <p className="mt-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
                 {lesson.streamCallId
-                  ? "No recordings yet for this linked call."
-                  : "No linked call for this lesson."}
+                  ? "Încă nu există înregistrări pentru acest apel asociat."
+                  : "Nu există niciun apel asociat pentru această lecție."}
               </p>
             ) : (
               <ul className="mt-3 space-y-2">
@@ -565,7 +565,7 @@ export default function TeacherLessonGradesPage() {
                     <div>
                       <p className="font-semibold text-slate-800">{recording.filename}</p>
                       <p className="text-slate-500">{formatDateTime(recording.startTime)}</p>
-                      <p className="text-xs text-slate-500">Type: {recording.recordingType}</p>
+                      <p className="text-xs text-slate-500">Tip: {recording.recordingType}</p>
                     </div>
                     <a
                       href={recording.url}
@@ -573,7 +573,7 @@ export default function TeacherLessonGradesPage() {
                       rel="noreferrer"
                       className="rounded bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
                     >
-                      Play
+                      Redă
                     </a>
                   </li>
                 ))}
@@ -582,14 +582,14 @@ export default function TeacherLessonGradesPage() {
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <h3 className="text-lg font-semibold text-slate-900">Manual Grades</h3>
+            <h3 className="text-lg font-semibold text-slate-900">Note manuale</h3>
             <p className="mt-1 text-sm text-slate-500">
-              Add and review teacher-entered grades for students in this lesson group.
+              Adaugă și verifică notele introduse de profesor pentru elevii din această grupă.
             </p>
 
             {students.length === 0 ? (
               <div className="mt-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-600">
-                No active students in this lesson group.
+                Nu există elevi activi în această grupă a lecției.
               </div>
             ) : (
               <div className="mt-4 space-y-4">
@@ -614,7 +614,7 @@ export default function TeacherLessonGradesPage() {
                         </h4>
                         <p className="text-sm text-slate-600">{student.email}</p>
                         <p className="text-sm text-slate-500">
-                          Level:{" "}
+                          Nivel:{" "}
                           {student.currentLevel
                             ? `${student.currentLevel.code} - ${student.currentLevel.title}`
                             : "N/A"}
@@ -638,7 +638,7 @@ export default function TeacherLessonGradesPage() {
                               success: null,
                             })
                           }
-                          placeholder="Grade 1-10"
+                          placeholder="Notă 1-10"
                           className="rounded border border-slate-300 px-3 py-2 text-sm"
                         />
                         <textarea
@@ -650,7 +650,7 @@ export default function TeacherLessonGradesPage() {
                               success: null,
                             })
                           }
-                          placeholder="Optional comment"
+                          placeholder="Comentariu opțional"
                           rows={2}
                           className="rounded border border-slate-300 px-3 py-2 text-sm"
                         />
@@ -659,7 +659,7 @@ export default function TeacherLessonGradesPage() {
                           disabled={form.submitting}
                           className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
                         >
-                          {form.submitting ? "Saving..." : "Save Grade"}
+                          {form.submitting ? "Se salvează..." : "Salvează nota"}
                         </button>
                       </form>
 
@@ -672,10 +672,10 @@ export default function TeacherLessonGradesPage() {
 
                       <div className="mt-4">
                         <p className="text-sm font-semibold text-slate-700">
-                          Existing manual grades for this lesson
+                          Note manuale existente pentru această lecție
                         </p>
                         {studentGrades.length === 0 ? (
-                          <p className="mt-1 text-sm text-slate-500">No grades yet.</p>
+                          <p className="mt-1 text-sm text-slate-500">Încă nu există note.</p>
                         ) : (
                           <ul className="mt-2 space-y-2">
                             {studentGrades.map((grade) => (
@@ -683,7 +683,7 @@ export default function TeacherLessonGradesPage() {
                                 key={grade.gradeId}
                                 className="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
                               >
-                                <span className="font-semibold">Value: {grade.value}</span>{" "}
+                                <span className="font-semibold">Valoare: {grade.value}</span>{" "}
                                 <span className="text-slate-500">
                                   ({new Date(grade.gradedAt).toLocaleString()})
                                 </span>

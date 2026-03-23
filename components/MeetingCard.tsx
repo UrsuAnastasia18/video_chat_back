@@ -32,6 +32,14 @@ const STATUS_STYLES: Record<string, string> = {
   CANCELLED: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  SCHEDULED: "Programată",
+  LIVE: "Live",
+  COMPLETED: "Finalizată",
+  CANCELLED: "Anulată",
+  "LIVE NOW": "În desfășurare",
+};
+
 const MeetingCard = ({
   icon,
   title,
@@ -122,7 +130,7 @@ const MeetingCard = ({
                   : STATUS_STYLES[status] ?? "bg-slate-100 text-slate-700 border-slate-200"
               )}
             >
-              {status}
+              {STATUS_LABELS[status] ?? status}
             </span>
           ) : null}
         </div>
@@ -139,7 +147,7 @@ const MeetingCard = ({
               isBannerVariant ? "text-white/60" : "text-slate-400"
             )}
           >
-            Scheduled
+            Programată
           </p>
           <p
             className={cn(
@@ -173,7 +181,7 @@ const MeetingCard = ({
               <Button
                 onClick={() => {
                   navigator.clipboard.writeText(link);
-                  toast.success("Link Copied");
+                  toast.success("Link copiat");
                 }}
                 className={cn(
                   "px-4 py-2 text-sm",
@@ -186,7 +194,7 @@ const MeetingCard = ({
                   width={16}
                   height={16}
                 />
-                {" "}Copy Link
+                {" "}Copiază linkul
               </Button>
             ) : null}
             {secondaryButtonText && onSecondaryClick ? (

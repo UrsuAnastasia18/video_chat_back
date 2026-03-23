@@ -16,17 +16,17 @@ export default function StudentLessonsPage() {
   return (
     <section className="flex size-full flex-col gap-6 text-black">
       <StudentPageHeader
-        title="My Lessons"
-        subtitle="See upcoming and previous lessons for your current group."
+        title="Lecțiile mele"
+        subtitle="Vezi lecțiile viitoare și anterioare pentru grupa ta curentă."
       />
 
       <StudentHero
-        title="Lesson Timeline"
-        subtitle="Join linked meetings when available and review past sessions."
+        title="Calendarul lecțiilor"
+        subtitle="Intră în ședințele asociate când sunt disponibile și revizuiește sesiunile trecute."
         chips={
           <>
-            <StudentChip>Academic Schedule</StudentChip>
-            <StudentChip>Meeting Access</StudentChip>
+            <StudentChip>Program academic</StudentChip>
+            <StudentChip>Acces la ședințe</StudentChip>
           </>
         }
       />
@@ -41,7 +41,7 @@ export default function StudentLessonsPage() {
               : "text-slate-600 hover:bg-slate-100"
           }`}
         >
-          Upcoming
+          Urmează
         </button>
         <button
           type="button"
@@ -52,7 +52,7 @@ export default function StudentLessonsPage() {
               : "text-slate-600 hover:bg-slate-100"
           }`}
         >
-          Previous
+          Anterioare
         </button>
       </div>
 
@@ -60,4 +60,3 @@ export default function StudentLessonsPage() {
     </section>
   );
 }
-

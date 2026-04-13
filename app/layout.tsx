@@ -26,18 +26,43 @@ export default function RootLayout({
       <ClerkProvider
       appearance = {{
         layout:{
-          logoImageUrl: '/icons/logo.svg',
           socialButtonsVariant:'iconButton',
         },
-        //aici se modifica cum arata sign in si sign out
         variables:{
-          colorText:'#1c1f2e',
-          colorPrimary:'#0E78F9',
-          colorBackground:'#fff',
-          colorInputBackground:'#fff',
-          colorInputText:'252a41'
-
-        }
+          colorText:'#17141f',
+          colorPrimary:'#6465c8',
+          colorBackground:'#ffffff',
+          colorInputBackground:'#fff8f1',
+          colorInputText:'#252a41',
+          colorNeutral:'#eadfeb',
+          colorDanger:'#df6f98',
+          borderRadius:'18px',
+          fontFamily:'DM Sans, sans-serif'
+        },
+        elements: {
+          rootBox: "w-full",
+          cardBox: "w-full shadow-none",
+          card: "w-full rounded-[28px] border border-[#eadfeb] bg-white shadow-none",
+          headerLogoBox: "hidden",
+          headerTitle: "text-[28px] font-black tracking-[-0.03em] text-[#17141f]",
+          headerSubtitle: "text-sm leading-6 text-[#75697c]",
+          footer: "hidden",
+          footerAction: "hidden",
+          socialButtonsBlockButton:
+            "rounded-2xl border border-[#eadfeb] bg-[#fff8f1] text-[#17141f] shadow-none hover:bg-[#ffeef4]",
+          formButtonPrimary:
+            "rounded-2xl bg-[#6465c8] text-white shadow-[0_14px_30px_rgba(100,101,200,0.28)] hover:bg-[#5557b8]",
+          formFieldInput:
+            "rounded-2xl border border-[#eadfeb] bg-[#fff8f1] text-[#17141f] shadow-none focus:border-[#6465c8] focus:ring-0",
+          formFieldLabel: "text-xs font-bold uppercase tracking-[0.12em] text-[#75697c]",
+          footerActionLink: "font-semibold text-[#6465c8] hover:text-[#4f50ab]",
+          identityPreviewText: "text-[#17141f]",
+          identityPreviewEditButton: "text-[#6465c8]",
+          formResendCodeLink: "text-[#6465c8] hover:text-[#4f50ab]",
+          otpCodeFieldInput:
+            "rounded-2xl border border-[#eadfeb] bg-[#fff8f1] text-[#17141f] shadow-none focus:border-[#6465c8]",
+          alert: "rounded-2xl border border-[#f0b3c7] bg-[#fff1f5] text-[#a04469]"
+        },
       }}
       >
           <body className={`${inter.className} bg-dark-2`}>

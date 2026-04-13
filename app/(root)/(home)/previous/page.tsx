@@ -1,15 +1,17 @@
-import React from 'react'
-import CallList from '@/components/CallList'
+import React from "react";
+import CallList from "@/components/CallList";
+import HomeSectionShell from "@/components/HomeSectionShell";
 
 const Previous = () => {
   return (
-    <section className= "flex size-full flex-col gap-10 text-black">
-      <h1 className="text-3xl font-bold">
-        Anterioare
-      </h1>
-      <CallList type={'ended'}/>
-      </section>
-  )
-}
+    <HomeSectionShell
+      eyebrow="Istoric"
+      title="Anterioare"
+      description=""
+    >
+      <CallList type="ended" />
+    </HomeSectionShell>
+  );
+};
 
-export default Previous
+export default Previous;

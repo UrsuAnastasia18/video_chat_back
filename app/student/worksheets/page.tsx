@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { sidebarLinks } from "@/constants";
 import {
   StudentChip,
   StudentEmptyState,
@@ -44,6 +45,8 @@ export default function StudentWorksheetsPage() {
   const [statuses, setStatuses] = useState<Record<string, SubmissionStatus>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const worksheetsIcon =
+    sidebarLinks.find((link) => link.route === "/student/worksheets")?.imgUrl ?? "/icons/edit.png";
 
   useEffect(() => {
     const load = async () => {
@@ -108,18 +111,15 @@ export default function StudentWorksheetsPage() {
 
   return (
     <section className="flex size-full flex-col gap-6" style={{ color: "#1e293b" }}>
-      <StudentPageHeader
-        title="Fișe de lucru"
-        subtitle="Completează fișele disponibile pentru nivelul tău."
-      />
+      
 
       <StudentHero
         title="Exersare prin fișe"
         subtitle="Consolidează lecțiile prin exerciții structurate și urmărește progresul tău."
         rightSlot={
-          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center">
-            <p className="text-2xl font-black leading-none text-white">{worksheets.length}</p>
-            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white/45">
+          <div className="rounded-2xl border border-[#f6d98d] bg-[#fff4c9] px-4 py-3 text-center">
+            <p className="text-2xl font-black leading-none text-[#8a6122]">{worksheets.length}</p>
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#b0894a]">
               fișe
             </p>
           </div>
@@ -148,7 +148,7 @@ export default function StudentWorksheetsPage() {
             <StudentPanel
               title={`De completat`}
               rightSlot={
-                <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-600">
+                <span className="rounded-full border border-[#f6d98d] bg-[#fff4c9] px-2.5 py-0.5 text-xs font-bold text-[#8a6122]">
                   {pending.length}
                 </span>
               }
@@ -161,12 +161,11 @@ export default function StudentWorksheetsPage() {
             </StudentPanel>
           )}
 
-          {/* ── Completed ── */}
           {completed.length > 0 && (
             <StudentPanel
               title={`Completate`}
               rightSlot={
-                <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-600">
+                <span className="rounded-full border border-[#bde7cf] bg-[#e9fff1] px-2.5 py-0.5 text-xs font-bold text-[#177245]">
                   {completed.length}
                 </span>
               }
@@ -193,36 +192,31 @@ function WorksheetCard({ ws, status }: { ws: Worksheet; status: SubmissionStatus
     <Link href={`/student/worksheets/${ws.id}`}
       className="flex flex-col justify-between rounded-2xl p-5 transition-all duration-150 hover:-translate-y-0.5"
       style={{
-        background: "#fff",
-        border: `1px solid ${done ? "rgba(16,185,129,0.2)" : "#e2e8f0"}`,
-        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+        background: "linear-gradient(180deg,#ffffff 0%,#fff8f1 100%)",
+        border: `1px solid ${done ? "rgba(140,215,178,0.8)" : "#eadfeb"}`,
+        boxShadow: "0 12px 28px rgba(58,36,72,0.06)",
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 20px rgba(0,0,0,0.08)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 18px 34px rgba(58,36,72,0.1)";
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 28px rgba(58,36,72,0.06)";
       }}
     >
-      <div className="flex items-start justify-between gap-2 mb-3">
-        {/* level badge */}
-        <span className="rounded-full px-2.5 py-1 text-[11px] font-bold shrink-0"
-          style={{ background: "rgba(240,165,0,0.1)", color: "#b45309" }}>
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <span className="rounded-full border border-[#f6d98d] bg-[#fff4c9] px-2.5 py-1 text-[11px] font-bold shrink-0 text-[#8a6122]">
           {ws.level.code}
         </span>
 
-        {/* status badge */}
         {done ? (
-          <span className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold shrink-0"
-            style={{ background: "rgba(16,185,129,0.08)", color: "#059669" }}>
+          <span className="flex items-center gap-1 rounded-full border border-[#bde7cf] bg-[#e9fff1] px-2.5 py-1 text-[11px] font-semibold shrink-0 text-[#177245]">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} className="h-3 w-3">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
             Completat
           </span>
         ) : (
-          <span className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold shrink-0"
-            style={{ background: "rgba(79,142,247,0.08)", color: "#4f8ef7" }}>
+          <span className="flex items-center gap-1 rounded-full border border-[#f0b3c7] bg-[#ffe6ef] px-2.5 py-1 text-[11px] font-semibold shrink-0 text-[#a04469]">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} className="h-3 w-3">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -231,30 +225,27 @@ function WorksheetCard({ ws, status }: { ws: Worksheet; status: SubmissionStatus
         )}
       </div>
 
-      {/* title + description */}
-      <div className="flex-1 mb-4">
-        <h3 className="font-bold leading-snug" style={{ color: "#1e293b", fontSize: "14px" }}>{ws.title}</h3>
+      <div className="mb-4 flex-1">
+        <h3 className="font-bold leading-snug" style={{ color: "#17141f", fontSize: "14px" }}>{ws.title}</h3>
         {ws.description && (
-          <p className="mt-1 line-clamp-2 text-xs leading-relaxed" style={{ color: "#94a3b8" }}>
+          <p className="mt-1 line-clamp-2 text-xs leading-relaxed" style={{ color: "#75697c" }}>
             {ws.description}
           </p>
         )}
       </div>
 
-      {/* footer */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-xs" style={{ color: "#94a3b8" }}>
+          <span className="text-xs" style={{ color: "#8b7c8f" }}>
             {ws.maxScore} {ws.maxScore === 1 ? "întrebare" : "întrebări"}
           </span>
           {status && (
-            <span className="text-xs" style={{ color: "#cbd5e1" }}>
+            <span className="text-xs" style={{ color: "#d0b7c3" }}>
               · {status.attempts} {status.attempts === 1 ? "încercare" : "încercări"}
             </span>
           )}
         </div>
 
-        {/* grade badge */}
         {gS && status?.gradeValue && (
           <span className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold"
             style={{ background: gS.bg, color: gS.text, border: `1px solid ${gS.border}` }}>

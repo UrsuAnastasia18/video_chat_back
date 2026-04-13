@@ -186,11 +186,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Book not found" }, { status: 404 });
     }
 
-    await prisma.book.update({
+    await prisma.book.delete({
       where: { id: existingBook.id },
-      data: {
-        isActive: false,
-      },
     });
 
     return NextResponse.json({ success: true });

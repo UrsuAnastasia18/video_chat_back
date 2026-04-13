@@ -41,7 +41,7 @@
   /* destructive / remove */
 
   /* ── Content area ── */
-  --color-content-bg: #fef3c7;
+  --color-content-bg: #fbf6f1;
   /* page background */
   --color-content-card: #ffffff;
   /* card surface */
@@ -80,13 +80,13 @@
 
 :root {
   --radius: 0.75rem;
-  --background: #fef3c7;
+  --background: #fbf6f1;
   --foreground: #1e293b;
 }
 
 @layer base {
   * {
-    @apply border-[#e2e8f0] outline-[#4f8ef7]/50;
+    @apply border-content-border outline-[#4f8ef7]/50;
     box-sizing: border-box;
   }
 
@@ -122,4 +122,267 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* ── Stream device settings ── */
+.str-video__menu-container {
+  background: #ffffff !important;
+  border: 1px solid #eadfeb !important;
+  border-radius: 28px !important;
+  box-shadow: 0 24px 60px rgba(58, 36, 72, 0.18) !important;
+}
+
+.str-video__menu-container button,
+.str-video__menu-container .str-video__composite-button__button-group,
+.str-video__menu-container .str-video__composite-button__button,
+.str-video__menu-container .str-video__menu-toggle-button {
+  background: #fff8f1 !important;
+  color: #17141f !important;
+  border: 1px solid #eadfeb !important;
+  border-radius: 9999px !important;
+  box-shadow: none !important;
+}
+
+.str-video__menu-container button:hover,
+.str-video__menu-container .str-video__composite-button__button-group:hover,
+.str-video__menu-container .str-video__composite-button__button:hover,
+.str-video__menu-container .str-video__menu-toggle-button:hover {
+  background: #ffeef4 !important;
+}
+
+.str-video__menu-container button .str-video__icon,
+.str-video__menu-container .str-video__composite-button__button-group .str-video__icon,
+.str-video__menu-container .str-video__composite-button__button .str-video__icon,
+.str-video__menu-container .str-video__menu-toggle-button .str-video__icon {
+  color: #17141f !important;
+  background-color: #17141f !important;
+}
+
+.str-video__device-settings {
+  background: #ffffff !important;
+  color: #17141f !important;
+}
+
+.str-video__device-settings__button {
+  background: #fff8f1 !important;
+  color: #17141f !important;
+  border: 1px solid #eadfeb !important;
+  border-radius: 9999px !important;
+  box-shadow: none !important;
+}
+
+.str-video__device-settings__button:hover {
+  background: #ffeef4 !important;
+}
+
+.str-video__device-settings__button .str-video__icon {
+  color: #17141f !important;
+  background-color: #17141f !important;
+}
+
+.str-video__device-settings__device-kind .str-video__device-settings__device-selector-title {
+  color: #17141f !important;
+}
+
+.str-video__device-settings__device-kind .str-video__device-settings__option,
+.str-video__device-settings__device-kind .str-video__option {
+  background: #fff8f1 !important;
+  color: #17141f !important;
+}
+
+.str-video__device-settings__device-kind .str-video__device-settings__option:hover,
+.str-video__device-settings__device-kind .str-video__option:hover,
+.str-video__device-settings__device-kind .str-video__device-settings__option--selected,
+.str-video__device-settings__device-kind .str-video__device-settings__option--active,
+.str-video__device-settings__device-kind .str-video__option--selected,
+.str-video__device-settings__device-kind .str-video__option--active {
+  background: #ffeef4 !important;
+}
+
+.str-video__device-settings__separator {
+  border-color: #eadfeb !important;
+}
+
+.str-video__audio-volume-indicator,
+.str-video__speaker-test,
+.str-video__speaker-test button {
+  color: #17141f !important;
+}
+
+.str-video__speaker-test .str-video__composite-button__button-group,
+.str-video__speaker-test .str-video__composite-button__button,
+.str-video__speaker-test__button {
+  background: #fff8f1 !important;
+  color: #17141f !important;
+  border: 1px solid #eadfeb !important;
+  border-radius: 1rem !important;
+  box-shadow: none !important;
+}
+
+.str-video__speaker-test .str-video__composite-button__button-group:hover,
+.str-video__speaker-test .str-video__composite-button__button:hover,
+.str-video__speaker-test__button:hover {
+  background: #ffeef4 !important;
+}
+
+.str-video__speaker-test .str-video__icon {
+  color: #17141f !important;
+}
+
+.str-video__speaker-test {
+  padding: 0.25rem 0 0 !important;
+}
+
+.str-video__speaker-test .str-video__composite-button__button-group {
+  width: 100% !important;
+  min-height: 3.5rem !important;
+}
+
+.str-video__speaker-test .str-video__composite-button__button {
+  width: 100% !important;
+  min-height: 3.5rem !important;
+  padding: 0 !important;
+}
+
+.str-video__speaker-test .str-video__speaker-test__button-content {
+  justify-content: center !important;
+  min-height: 3.5rem !important;
+  padding: 0 1.25rem !important;
+}
+
+/* ── Meeting controls light theme ── */
+.meeting-controls-light .str-video__call-controls__button,
+.meeting-controls-light .str-video__composite-button__button-group,
+.meeting-controls-light .str-video__composite-button__button,
+.meeting-controls-light .str-video__menu-toggle-button,
+.meeting-controls-light .str-video__call-controls .str-video__reactions-menu__button {
+  background: #fff8f1 !important;
+  color: #17141f !important;
+  border: 1px solid #eadfeb !important;
+  border-radius: 9999px !important;
+  box-shadow: none !important;
+}
+
+.meeting-controls-light .str-video__call-controls__button:hover,
+.meeting-controls-light .str-video__composite-button__button-group:hover,
+.meeting-controls-light .str-video__composite-button__button:hover,
+.meeting-controls-light .str-video__menu-toggle-button:hover,
+.meeting-controls-light .str-video__call-controls .str-video__reactions-menu__button:hover {
+  background: #ffeef4 !important;
+}
+
+.meeting-controls-light .str-video__call-controls__button .str-video__icon,
+.meeting-controls-light .str-video__composite-button__button-group .str-video__icon,
+.meeting-controls-light .str-video__composite-button__button .str-video__icon,
+.meeting-controls-light .str-video__menu-toggle-button .str-video__icon,
+.meeting-controls-light .str-video__call-controls .str-video__reactions-menu__button .str-video__icon {
+  color: #17141f !important;
+  background-color: #17141f !important;
+}
+
+.meeting-controls-light .str-video__call-controls__button--variant-danger {
+  background: #e55757 !important;
+  border-color: transparent !important;
+}
+
+.meeting-controls-light .str-video__call-controls__button--variant-danger:hover {
+  background: #d54a4a !important;
+}
+
+.meeting-controls-light .str-video__call-controls__button--variant-danger .str-video__icon {
+  color: #ffffff !important;
+  background-color: #ffffff !important;
+}
+
+.meeting-controls-light .str-video__call-controls__button--variant-active {
+  background: #ffe6ef !important;
+  border-color: #f0b3c7 !important;
+}
+
+.meeting-controls-light .str-video__call-controls__button--variant-active:hover {
+  background: #ffd8e7 !important;
+}
+
+.meeting-controls-light .str-video__call-controls__button--variant-active .str-video__icon {
+  color: #a04469 !important;
+  background-color: #a04469 !important;
+}
+
+.meeting-controls-light .str-video__call-controls .str-video__reactions-menu {
+  background: #ffffff !important;
+  border: 1px solid #eadfeb !important;
+  border-radius: 9999px !important;
+}
+
+/* ── Participant panel light theme ── */
+.participant-panel-light .str-video__participant-list-header__close-button,
+.participant-panel-light .str-video__participant-list .str-video__call-controls__button,
+.participant-panel-light .str-video__participant-listing-item .str-video__call-controls__button {
+  background: #fff8f1 !important;
+  color: #17141f !important;
+  border: 1px solid #eadfeb !important;
+  box-shadow: none !important;
+}
+
+.participant-panel-light .str-video__participant-list-header__close-button:hover,
+.participant-panel-light .str-video__participant-list .str-video__call-controls__button:hover,
+.participant-panel-light .str-video__participant-listing-item .str-video__call-controls__button:hover {
+  background: #ffeef4 !important;
+}
+
+.participant-panel-light .str-video__participant-list-header__close-button .str-video__icon,
+.participant-panel-light .str-video__participant-list .str-video__call-controls__button .str-video__icon,
+.participant-panel-light .str-video__participant-listing-item .str-video__call-controls__button .str-video__icon {
+  color: #17141f !important;
+  background-color: #17141f !important;
+}
+
+.participant-panel-light .str-video__search-input__container {
+  background: #fff8f1 !important;
+  color: #17141f !important;
+  border: 1px solid #eadfeb !important;
+}
+
+.participant-panel-light .str-video__search-input__container input {
+  color: #17141f !important;
+}
+
+.participant-panel-light .str-video__search-input__container input::placeholder {
+  color: #8b7c8f !important;
+}
+
+.participant-panel-light .str-video__search-input__container .str-video__search-input__icon,
+.participant-panel-light .str-video__search-input__container .str-video__search-input__icon--active {
+  background-color: #8b7c8f !important;
+}
+
+/* ── Meeting stage participant tile ── */
+.meeting-stage-light .str-video__participant-view {
+  outline: 1px solid rgba(240, 179, 199, 0.65) !important;
+  outline-offset: -1px !important;
+}
+
+.meeting-stage-light .str-video__participant-view--speaking {
+  outline: 2px solid #f0b3c7 !important;
+}
+
+.meeting-stage-light .str-video__participant-view .str-video__participant-details {
+  background: rgba(255, 248, 241, 0.98) !important;
+  color: #17141f !important;
+  border-top: 1px solid #eadfeb !important;
+  border-right: 1px solid #eadfeb !important;
+}
+
+.meeting-stage-light .str-video__participant-view .str-video__participant-details .str-video__participant-details__name {
+  color: #17141f !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+}
+
+.meeting-stage-light .str-video__participant-view .str-video__participant-details .str-video__participant-details__name--audio-muted,
+.meeting-stage-light .str-video__participant-view .str-video__participant-details .str-video__participant-details__name--video-muted,
+.meeting-stage-light .str-video__participant-view .str-video__participant-details .str-video__participant-details__name--track-paused,
+.meeting-stage-light .str-video__participant-view .str-video__participant-details .str-video__participant-details__name--pinned,
+.meeting-stage-light .str-video__participant-view .str-video__participant-details .str-video__participant-details__name--network-stats {
+  background-color: #a04469 !important;
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { sidebarLinks } from "@/constants";
+import { StudentPageHeader } from "@/components/student/StudentShell";
 
 interface GroupData {
   id: string;
@@ -34,6 +36,8 @@ export default function StudentGroupPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [show, setShow] = useState(false);
+  const groupIcon =
+    sidebarLinks.find((link) => link.route === "/student/group")?.imgUrl ?? "/icons/users-alt.png";
 
   useEffect(() => {
     (async () => {
@@ -67,12 +71,7 @@ export default function StudentGroupPage() {
   return (
     <div style={{ opacity: show ? 1 : 0, transform: show ? "none" : "translateY(10px)", transition: "opacity 0.4s ease, transform 0.4s ease" }}>
       <section className="flex size-full flex-col gap-6" style={{ color: "#1e293b" }}>
-
-        {/* title */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Grupul meu</h1>
-          <p className="mt-0.5 text-sm" style={{ color: "#94a3b8" }}>Grupul tău de studiu și colegii.</p>
-        </div>
+       
 
         {/* error */}
         {error && (
@@ -88,16 +87,16 @@ export default function StudentGroupPage() {
         {/* empty */}
         {!data?.group ? (
           <div className="flex flex-col items-center gap-4 rounded-3xl py-24"
-            style={{ background: "linear-gradient(135deg,#f8fafc,#f1f5f9)", border: "2px dashed #e2e8f0" }}>
+            style={{ background: "linear-gradient(180deg,#ffffff 0%,#fff8f1 100%)", border: "2px dashed #eadfeb" }}>
             <div className="flex h-16 w-16 items-center justify-center rounded-3xl"
-              style={{ background: "#fff", boxShadow: "0 4px 24px rgba(79,142,247,0.13)", border: "1px solid #e0eaff" }}>
-              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="#4f8ef7" strokeWidth={1.5}>
+              style={{ background: "#fff", boxShadow: "0 10px 24px rgba(223,111,152,0.14)", border: "1px solid #f0b3c7" }}>
+              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="#df6f98" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
               </svg>
             </div>
             <div className="text-center">
-              <p className="font-semibold" style={{ color: "#334155" }}>Nu ești în niciun grup</p>
-              <p className="mt-1 text-sm" style={{ color: "#94a3b8" }}>Profesorul tău te va adăuga în curând.</p>
+              <p className="font-semibold" style={{ color: "#17141f" }}>Nu ești în niciun grup</p>
+              <p className="mt-1 text-sm" style={{ color: "#75697c" }}>Profesorul tău te va adăuga în curând.</p>
             </div>
           </div>
         ) : (
@@ -105,19 +104,20 @@ export default function StudentGroupPage() {
             {/* ══ HERO ══════════════════════════════════════════════════════ */}
             <div className="relative overflow-hidden rounded-3xl"
               style={{
-                background: "linear-gradient(140deg, #1a2740 0%, #1e3a60 55%, #152c4a 100%)",
-                boxShadow: "0 12px 48px rgba(20,40,70,0.28)",
+                background: "linear-gradient(180deg, #ffffff 0%, #fff8f1 100%)",
+                boxShadow: "0 18px 42px rgba(58,36,72,0.08)",
+                border: "1px solid #eadfeb",
               }}>
 
               {/* dot texture */}
               <div className="pointer-events-none absolute inset-0"
-                style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.055) 1px, transparent 1px)", backgroundSize: "26px 26px" }} />
+                style={{ backgroundImage: "repeating-linear-gradient(0deg,#df6f98 0,#df6f98 1px,transparent 1px,transparent 48px),repeating-linear-gradient(90deg,#f6a43a 0,#f6a43a 1px,transparent 1px,transparent 48px)", opacity: 0.05 }} />
               {/* glow top-right */}
               <div className="pointer-events-none absolute -top-20 -right-20 h-72 w-72 rounded-full"
-                style={{ background: "radial-gradient(circle, rgba(79,142,247,0.2) 0%, transparent 65%)" }} />
+                style={{ background: "radial-gradient(circle, rgba(243,169,194,0.3) 0%, transparent 65%)" }} />
               {/* glow bottom-left */}
               <div className="pointer-events-none absolute -bottom-12 -left-12 h-52 w-52 rounded-full"
-                style={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 65%)" }} />
+                style={{ background: "radial-gradient(circle, rgba(150,151,243,0.2) 0%, transparent 65%)" }} />
 
               <div className="relative px-7 py-7">
                 {/* top */}
@@ -125,17 +125,17 @@ export default function StudentGroupPage() {
                   <div className="flex-1 min-w-0">
                     {/* level badge */}
                     <span className="mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold"
-                      style={{ background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.2)", color: "#fbbf24" }}>
-                      <span className="h-1.5 w-1.5 rounded-full inline-block" style={{ background: "#fbbf24" }} />
+                      style={{ background: "#fff4c9", border: "1px solid #f6d98d", color: "#8a6122" }}>
+                      <span className="h-1.5 w-1.5 rounded-full inline-block" style={{ background: "#f6a43a" }} />
                       {data.group.level.code} · {data.group.level.title}
                     </span>
 
-                    <h2 className="text-[2rem] font-bold leading-none" style={{ color: "#fff", letterSpacing: "-0.03em" }}>
+                    <h2 className="text-[2rem] font-bold leading-none" style={{ color: "#17141f", letterSpacing: "-0.03em" }}>
                       {data.group.name}
                     </h2>
 
                     {data.group.description && (
-                      <p className="mt-2 text-sm leading-relaxed max-w-md" style={{ color: "rgba(255,255,255,0.42)" }}>
+                      <p className="mt-2 max-w-md text-sm leading-relaxed" style={{ color: "#75697c" }}>
                         {data.group.description}
                       </p>
                     )}
@@ -143,36 +143,36 @@ export default function StudentGroupPage() {
 
                   {/* count */}
                   <div className="shrink-0 flex flex-col items-center justify-center rounded-2xl px-5 py-4"
-                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", backdropFilter: "blur(12px)" }}>
-                    <span className="text-4xl font-black" style={{ color: "#fff", letterSpacing: "-0.05em", lineHeight: 1 }}>
+                    style={{ background: "#ffffff", border: "1px solid #eadfeb" }}>
+                    <span className="text-4xl font-black" style={{ color: "#17141f", letterSpacing: "-0.05em", lineHeight: 1 }}>
                       {data.members.length}
                     </span>
-                    <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: "#8b7c8f" }}>
                       colegi
                     </span>
                   </div>
                 </div>
 
                 {/* separator */}
-                <div className="my-5 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+                <div className="my-5 h-px" style={{ background: "#f5e8ef" }} />
 
                 {/* chips */}
                 <div className="flex flex-wrap gap-2.5">
                   {data.group.teacher && (
                     <Chip icon={
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="#4f8ef7" strokeWidth={2}>
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="#9697f3" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
                       </svg>
-                    } color="rgba(79,142,247,0.15)" border="rgba(79,142,247,0.22)">
+                    } color="#ededff" border="#cfd0ff">
                       {data.group.teacher.firstName} {data.group.teacher.lastName}
                     </Chip>
                   )}
                   {data.membership && (
                     <Chip icon={
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="#10b981" strokeWidth={2}>
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="#f6a43a" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                       </svg>
-                    } color="rgba(16,185,129,0.12)" border="rgba(16,185,129,0.22)">
+                    } color="#fff4c9" border="#f6d98d">
                       Înscris {new Date(data.membership.joinedAt).toLocaleDateString("ro-RO", { day: "numeric", month: "long", year: "numeric" })}
                     </Chip>
                   )}
@@ -182,23 +182,23 @@ export default function StudentGroupPage() {
 
             {/* ══ MEMBERS ═══════════════════════════════════════════════════ */}
             <div className="rounded-3xl overflow-hidden"
-              style={{ background: "#fff", border: "1px solid #e8edf4", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
+              style={{ background: "#fff", border: "1px solid #eadfeb", boxShadow: "0 12px 28px rgba(58,36,72,0.06)" }}>
 
               {/* header */}
               <div className="flex items-center justify-between px-6 py-4"
-                style={{ borderBottom: "1px solid #f1f5f9" }}>
-                <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#94a3b8" }}>
+                style={{ borderBottom: "1px solid #f5e8ef" }}>
+                <p className="text-[11px] font-black uppercase tracking-widest" style={{ color: "#df6f98" }}>
                   Colegi de grup
                 </p>
                 <span className="rounded-full px-2.5 py-0.5 text-xs font-bold"
-                  style={{ background: "rgba(79,142,247,0.08)", color: "#4f8ef7" }}>
+                  style={{ background: "#fff4c9", color: "#8a6122", border: "1px solid #f6d98d" }}>
                   {data.members.length}
                 </span>
               </div>
 
               {data.members.length === 0 ? (
                 <div className="flex items-center justify-center py-16">
-                  <p className="text-sm" style={{ color: "#94a3b8" }}>Niciun coleg momentan.</p>
+                  <p className="text-sm" style={{ color: "#75697c" }}>Niciun coleg momentan.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-4">
@@ -227,7 +227,7 @@ function Chip({ icon, color, border, children }: {
     <div className="flex items-center gap-2 rounded-full px-3.5 py-1.5"
       style={{ background: color, border: `1px solid ${border}` }}>
       {icon}
-      <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.72)" }}>
+      <span className="text-xs font-semibold" style={{ color: "#5f5464" }}>
         {children}
       </span>
     </div>

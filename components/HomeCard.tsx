@@ -9,48 +9,46 @@ interface HomeCardProps {
   handleClick: () => void;
 }
 
-// Map the old bg-* class names to new academic-style tokens
 const CARD_THEMES: Record<string, { bg: string; border: string; accent: string; iconBg: string; iconRing: string }> = {
   'bg-orange-1': {
     bg: '#ffffff',
-    border: 'rgba(79,142,247,0.22)',
-    accent: '#4f8ef7',
-    iconBg: 'rgba(79,142,247,0.16)',
-    iconRing: 'rgba(79,142,247,0.26)',
+    border: 'rgba(246,164,58,0.26)',
+    accent: '#f6a43a',
+    iconBg: '#fff0bf',
+    iconRing: 'rgba(246,164,58,0.38)',
   },
   'bg-blue-1': {
     bg: '#ffffff',
-    border: 'rgba(129,140,248,0.22)',
-    accent: '#818cf8',
-    iconBg: 'rgba(129,140,248,0.16)',
-    iconRing: 'rgba(129,140,248,0.26)',
+    border: 'rgba(150,151,243,0.32)',
+    accent: '#9697f3',
+    iconBg: '#ededff',
+    iconRing: 'rgba(150,151,243,0.36)',
   },
   'bg-purple-1': {
     bg: '#ffffff',
-    border: 'rgba(16,185,129,0.22)',
-    accent: '#10b981',
-    iconBg: 'rgba(16,185,129,0.16)',
-    iconRing: 'rgba(16,185,129,0.26)',
+    border: 'rgba(243,169,194,0.42)',
+    accent: '#df6f98',
+    iconBg: '#ffe6ef',
+    iconRing: 'rgba(223,111,152,0.34)',
   },
   'bg-yellow-1': {
     bg: '#ffffff',
-    border: 'rgba(245,158,11,0.22)',
-    accent: '#f59e0b',
-    iconBg: 'rgba(245,158,11,0.16)',
-    iconRing: 'rgba(245,158,11,0.26)',
+    border: 'rgba(255,228,140,0.9)',
+    accent: '#f2bc2f',
+    iconBg: '#fff4c9',
+    iconRing: 'rgba(242,188,47,0.36)',
   },
 };
 
 const DEFAULT_THEME = {
   bg: '#ffffff',
-  border: 'rgba(79,142,247,0.2)',
-  accent: '#4f8ef7',
-  iconBg: 'rgba(79,142,247,0.16)',
-  iconRing: 'rgba(79,142,247,0.26)',
+  border: 'rgba(243,169,194,0.32)',
+  accent: '#df6f98',
+  iconBg: '#ffe6ef',
+  iconRing: 'rgba(223,111,152,0.32)',
 };
 
 const HomeCard = ({ className, img, title, description, handleClick }: HomeCardProps) => {
-  // Extract the bg-* class to determine theme
   const themeKey = className
     .split(' ')
     .find((c) => c.startsWith('bg-')) ?? '';
@@ -58,32 +56,44 @@ const HomeCard = ({ className, img, title, description, handleClick }: HomeCardP
 
   return (
     <div
-      className="flex cursor-pointer flex-col justify-between rounded-2xl p-5 transition-all duration-200"
+      className="relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-[22px] p-5 transition-all duration-200"
       style={{
         background: theme.bg,
         border: `1px solid ${theme.border}`,
-        boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-        minHeight: '180px',
+        boxShadow: '0 14px 32px rgba(58,36,72,0.08)',
+        minHeight: '190px',
       }}
       onClick={handleClick}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.boxShadow = `0 6px 20px ${theme.accent}22`;
-        (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
-        (e.currentTarget as HTMLElement).style.borderColor = theme.accent + '55';
+        (e.currentTarget as HTMLElement).style.boxShadow = `0 20px 42px ${theme.accent}2e`;
+        (e.currentTarget as HTMLElement).style.transform = 'translateY(-5px) rotate(-0.35deg)';
+        (e.currentTarget as HTMLElement).style.borderColor = `${theme.accent}88`;
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)';
+        (e.currentTarget as HTMLElement).style.boxShadow = '0 14px 32px rgba(58,36,72,0.08)';
         (e.currentTarget as HTMLElement).style.transform = '';
         (e.currentTarget as HTMLElement).style.borderColor = theme.border;
       }}
     >
-      {/* Icon */}
+      <span
+        className="absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-55"
+        style={{ background: theme.iconBg }}
+      />
+      <span
+        className="absolute right-6 top-8 h-3 w-3 rounded-full"
+        style={{ background: theme.accent }}
+      />
+      <span
+        className="absolute bottom-5 right-6 h-2 w-16 rotate-[-6deg] rounded-full opacity-70"
+        style={{ background: theme.accent }}
+      />
+
       <div
-        className="flex h-12 w-12 items-center justify-center rounded-xl"
+        className="relative flex h-14 w-14 items-center justify-center rounded-2xl"
         style={{
           background: theme.iconBg,
           border: `1px solid ${theme.iconRing}`,
-          boxShadow: `0 6px 16px ${theme.accent}1f`,
+          boxShadow: `0 10px 22px ${theme.accent}20`,
         }}
       >
         <Image
@@ -91,16 +101,16 @@ const HomeCard = ({ className, img, title, description, handleClick }: HomeCardP
           alt={title}
           width={22}
           height={22}
-          className="opacity-95 brightness-[7] saturate-0"
+          className="opacity-95"
+          style={{ filter: 'brightness(0) saturate(100%)' }}
         />
       </div>
 
-      {/* Text */}
-      <div className="flex flex-col gap-1">
-        <h3 className="text-base font-bold" style={{ color: '#1e293b' }}>
+      <div className="relative flex flex-col gap-2">
+        <h3 className="text-lg font-black leading-tight" style={{ color: '#17141f' }}>
           {title}
         </h3>
-        <p className="text-sm" style={{ color: '#94a3b8' }}>
+        <p className="text-sm font-medium leading-5" style={{ color: '#75697c' }}>
           {description}
         </p>
       </div>

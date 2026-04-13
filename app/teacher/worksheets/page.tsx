@@ -1,10 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  InputHTMLAttributes,
+  ReactNode,
+  TextareaHTMLAttributes,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { WorksheetContent, WorksheetQuestion } from "@/lib/worksheet-content";
 
-/* ── Types ───────────────────────────────────────────────────────────────── */
-interface Level { id: string; code: string; title: string; }
+interface Level {
+  id: string;
+  code: string;
+  title: string;
+}
 
 interface Worksheet {
   id: string;
@@ -20,7 +32,6 @@ interface Worksheet {
 
 type ActiveFilter = "all" | "active" | "inactive";
 
-/* ── Helpers ─────────────────────────────────────────────────────────────── */
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 function emptyQuestion(): WorksheetQuestion {
@@ -38,40 +49,160 @@ function emptyQuestion(): WorksheetQuestion {
   };
 }
 
-/* ── Shared input style ──────────────────────────────────────────────────── */
-const inp: React.CSSProperties = {
-  background: "#f8fafc",
-  border: "1.5px solid #e2e8f0",
-  borderRadius: "0.65rem",
-  padding: "8px 12px",
-  fontSize: "13px",
-  color: "#1e293b",
-  outline: "none",
-  width: "100%",
-  transition: "border-color 0.15s",
-};
+function DecorativeDots() {
+  return (
+    <>
+      <span className="absolute -left-10 top-16 h-24 w-24 rounded-full bg-[#f3a9c2]/70" />
+      <span className="absolute right-10 top-12 h-6 w-6 rounded-full bg-[#eaa0bd]" />
+      <span className="absolute right-28 top-20 h-4 w-4 rounded-full bg-[#9697f3]" />
+      <span className="absolute bottom-10 right-10 h-24 w-24 rounded-full bg-[#ffe48c]/75" />
+      <span className="absolute bottom-16 left-12 h-16 w-16 rounded-full bg-[#9697f3]/65" />
+    </>
+  );
+}
 
-const lbl: React.CSSProperties = {
-  fontSize: "11px",
-  fontWeight: 700,
-  textTransform: "uppercase" as const,
-  letterSpacing: "0.08em",
-  color: "#64748b",
-  marginBottom: "4px",
-  display: "block",
-};
+function WorksheetIcon({ className = "h-6 w-6" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.8}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+      />
+    </svg>
+  );
+}
 
-const premiumSurfaceStyle = {
-  background: "linear-gradient(135deg, #1e2d40 0%, #243650 55%, #1a3a5c 100%)",
-};
+function FeedbackBanner({
+  type,
+  message,
+}: {
+  type: "error" | "success";
+  message: string;
+}) {
+  const success = type === "success";
 
-const panelStyle = {
-  background: "#fff",
-  border: "1px solid #e2e8f0",
-  boxShadow: "0 10px 26px rgba(30,45,64,0.08)",
-};
+  return (
+    <div
+      className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${
+        success
+          ? "border-[#c7ecd6] bg-[#effcf4] text-[#198754]"
+          : "border-[#f4c4cd] bg-[#fff2f4] text-[#c94b6c]"
+      }`}
+    >
+      {message}
+    </div>
+  );
+}
 
-/* ══════════════════════════════════════════════════════════════════════════ */
+function StatCard({
+  value,
+  label,
+  tone,
+}: {
+  value: number;
+  label: string;
+  tone: "yellow" | "pink" | "violet";
+}) {
+  const styles = {
+    yellow: "border-[#f6d98d] bg-[#fff4c9] text-[#8a6122]",
+    pink: "border-[#f0b3c7] bg-[#ffe6ef] text-[#a04469]",
+    violet: "border-[#d7d7fb] bg-[#efefff] text-[#6465c8]",
+  }[tone];
+
+  return (
+    <div className={`rounded-2xl border px-4 py-3 text-center ${styles}`}>
+      <p className="text-2xl font-black leading-none">{value}</p>
+      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.15em] opacity-80">{label}</p>
+    </div>
+  );
+}
+
+function FormLabel({ children }: { children: string }) {
+  return <label className="mb-2 block text-[11px] font-black uppercase tracking-[0.16em] text-[#8b7c8f]">{children}</label>;
+}
+
+function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      {...props}
+      className={`w-full rounded-2xl border border-[#eadfeb] bg-white px-4 py-3 text-sm text-[#17141f] outline-none transition placeholder:text-[#ab9cab] focus:border-[#9697f3] focus:ring-4 focus:ring-[#9697f3]/10 ${props.className ?? ""}`}
+    />
+  );
+}
+
+function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      {...props}
+      className={`w-full rounded-2xl border border-[#eadfeb] bg-white px-4 py-3 text-sm text-[#17141f] outline-none transition placeholder:text-[#ab9cab] focus:border-[#9697f3] focus:ring-4 focus:ring-[#9697f3]/10 ${props.className ?? ""}`}
+    />
+  );
+}
+
+function SelectField({
+  value,
+  onChange,
+  children,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  children: ReactNode;
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full appearance-none rounded-2xl border border-[#eadfeb] bg-white px-4 py-3 pr-11 text-sm text-[#17141f] outline-none transition focus:border-[#9697f3] focus:ring-4 focus:ring-[#9697f3]/10"
+      >
+        {children}
+      </select>
+      <svg
+        className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b7c8f]"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2}
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+      </svg>
+    </div>
+  );
+}
+
+function EmptyState({ onCreateClick }: { onCreateClick: () => void }) {
+  return (
+    <div className="rounded-[28px] border-2 border-dashed border-[#eadfeb] bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_100%)] px-6 py-16 text-center">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl border border-[#d7d7fb] bg-[#efefff] text-[#6465c8] shadow-[0_10px_24px_rgba(150,151,243,0.16)]">
+        <WorksheetIcon className="h-7 w-7" />
+      </div>
+      <h3 className="mt-5 text-xl font-black text-[#17141f]">Nu există încă fișe de lucru</h3>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#7c7081]">
+        Creează prima fișă interactivă pentru elevi și organizează exercițiile după nivel.
+      </p>
+      <button
+        type="button"
+        onClick={onCreateClick}
+        className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#9697f3] px-5 py-3 text-sm font-bold text-white shadow-[0_16px_34px_rgba(150,151,243,0.3)] transition hover:bg-[#7f80ea]"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        Creează prima fișă
+      </button>
+    </div>
+  );
+}
+
 export default function TeacherWorksheetsPage() {
   const [levels, setLevels] = useState<Level[]>([]);
   const [worksheets, setWorksheets] = useState<Worksheet[]>([]);
@@ -79,42 +210,36 @@ export default function TeacherWorksheetsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [pageError, setPageError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-
-  /* filters */
   const [levelFilter, setLevelFilter] = useState("all");
   const [activeFilter, setActiveFilter] = useState<ActiveFilter>("all");
-
-  /* form visibility */
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
-
-  /* form fields */
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [instructions, setInstructions] = useState("Choose one correct answer for each question and submit.");
   const [levelId, setLevelId] = useState("");
   const [isActive, setIsActive] = useState(true);
-
-  /* question builder */
   const [questions, setQuestions] = useState<WorksheetQuestion[]>([emptyQuestion()]);
 
-  /* ── API ──────────────────────────────────────────────────────────────── */
   const activeQuery = useMemo(() => {
     if (activeFilter === "active") return "true";
     if (activeFilter === "inactive") return "false";
     return null;
   }, [activeFilter]);
 
-  const loadWorksheets = useCallback(async (lf = levelFilter, aq = activeQuery) => {
-    const q = new URLSearchParams();
-    if (lf && lf !== "all") q.set("levelId", lf);
-    if (aq === "true" || aq === "false") q.set("isActive", aq);
-    const res = await fetch(`/api/worksheets${q.toString() ? `?${q}` : ""}`);
-    const data = (await res.json()) as { worksheets?: Worksheet[]; error?: string };
-    if (!res.ok) throw new Error(data.error ?? "Failed to load worksheets");
-    setWorksheets(data.worksheets ?? []);
-  }, [activeQuery, levelFilter]);
+  const loadWorksheets = useCallback(
+    async (lf = levelFilter, aq = activeQuery) => {
+      const q = new URLSearchParams();
+      if (lf && lf !== "all") q.set("levelId", lf);
+      if (aq === "true" || aq === "false") q.set("isActive", aq);
+      const res = await fetch(`/api/worksheets${q.toString() ? `?${q}` : ""}`);
+      const data = (await res.json()) as { worksheets?: Worksheet[]; error?: string };
+      if (!res.ok) throw new Error(data.error ?? "Failed to load worksheets");
+      setWorksheets(data.worksheets ?? []);
+    },
+    [activeQuery, levelFilter]
+  );
 
   useEffect(() => {
     const init = async () => {
@@ -147,10 +272,13 @@ export default function TeacherWorksheetsPage() {
 
   const derivedMaxScore = questions.length;
   const derivedPassingScore = questions.length > 0 ? 1 : 0;
+  const activeCount = worksheets.filter((worksheet) => worksheet.isActive).length;
+  const inactiveCount = worksheets.length - activeCount;
 
-  /* ── Form helpers ─────────────────────────────────────────────────────── */
   const resetForm = () => {
-    setTitle(""); setDescription(""); setIsActive(true);
+    setTitle("");
+    setDescription("");
+    setIsActive(true);
     setInstructions("Choose one correct answer for each question and submit.");
     setLevelId(levels[0]?.id ?? "");
     setQuestions([emptyQuestion()]);
@@ -161,6 +289,7 @@ export default function TeacherWorksheetsPage() {
 
   const openCreate = () => {
     resetForm();
+    setSuccessMsg(null);
     setFormOpen(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   };
@@ -174,81 +303,100 @@ export default function TeacherWorksheetsPage() {
     setIsActive(ws.isActive);
     setQuestions(
       ws.contentJson?.questions?.length
-        ? ws.contentJson.questions.map((q) => ({
-          ...q,
-          options: q.options.length >= 2 ? q.options : [...q.options, { id: uid(), label: "" }, { id: uid(), label: "" }],
-        }))
+        ? ws.contentJson.questions.map((question) => ({
+            ...question,
+            options:
+              question.options.length >= 2
+                ? question.options
+                : [...question.options, { id: uid(), label: "" }, { id: uid(), label: "" }],
+          }))
         : [emptyQuestion()]
     );
     setFormOpen(true);
     setPageError(null);
+    setSuccessMsg(null);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   };
 
-  /* ── Question builder actions ─────────────────────────────────────────── */
-  const addQuestion = () =>
-    setQuestions((prev) => [...prev, emptyQuestion()]);
+  const addQuestion = () => setQuestions((prev) => [...prev, emptyQuestion()]);
 
-  const removeQuestion = (qIdx: number) =>
-    setQuestions((prev) => prev.filter((_, i) => i !== qIdx));
+  const removeQuestion = (qIdx: number) => setQuestions((prev) => prev.filter((_, index) => index !== qIdx));
 
   const updateQuestion = (qIdx: number, patch: Partial<WorksheetQuestion>) =>
-    setQuestions((prev) => prev.map((q, i) => i === qIdx ? { ...q, ...patch } : q));
+    setQuestions((prev) => prev.map((question, index) => (index === qIdx ? { ...question, ...patch } : question)));
 
   const updateOption = (qIdx: number, oIdx: number, label: string) =>
     setQuestions((prev) =>
-      prev.map((q, i) =>
-        i !== qIdx ? q : {
-          ...q,
-          options: q.options.map((o, j) => j === oIdx ? { ...o, label } : o),
-        }
+      prev.map((question, index) =>
+        index !== qIdx
+          ? question
+          : {
+              ...question,
+              options: question.options.map((option, optionIndex) =>
+                optionIndex === oIdx ? { ...option, label } : option
+              ),
+            }
       )
     );
 
   const addOption = (qIdx: number) =>
     setQuestions((prev) =>
-      prev.map((q, i) =>
-        i !== qIdx ? q : { ...q, options: [...q.options, { id: uid(), label: "" }] }
+      prev.map((question, index) =>
+        index !== qIdx ? question : { ...question, options: [...question.options, { id: uid(), label: "" }] }
       )
     );
 
   const removeOption = (qIdx: number, oIdx: number) =>
     setQuestions((prev) =>
-      prev.map((q, i) => {
-        if (i !== qIdx) return q;
-        const newOpts = q.options.filter((_, j) => j !== oIdx);
+      prev.map((question, index) => {
+        if (index !== qIdx) return question;
+        const newOptions = question.options.filter((_, optionIndex) => optionIndex !== oIdx);
         return {
-          ...q,
-          options: newOpts,
-          correctOptionId: q.correctOptionId === q.options[oIdx]?.id ? undefined : q.correctOptionId,
+          ...question,
+          options: newOptions,
+          correctOptionId: question.correctOptionId === question.options[oIdx]?.id ? undefined : question.correctOptionId,
         };
       })
     );
 
-  const setCorrect = (qIdx: number, optionId: string) =>
-    updateQuestion(qIdx, { correctOptionId: optionId });
+  const setCorrect = (qIdx: number, optionId: string) => updateQuestion(qIdx, { correctOptionId: optionId });
 
-  /* ── Submit ───────────────────────────────────────────────────────────── */
   const handleSubmit = async () => {
     setPageError(null);
     setSuccessMsg(null);
 
-    // validate
-    if (!title.trim()) { setPageError("Titlul este obligatoriu."); return; }
-    if (!levelId) { setPageError("Selectează un nivel."); return; }
-    if (questions.length === 0) { setPageError("Adaugă cel puțin o întrebare."); return; }
+    if (!title.trim()) {
+      setPageError("Titlul este obligatoriu.");
+      return;
+    }
+    if (!levelId) {
+      setPageError("Selectează un nivel.");
+      return;
+    }
+    if (questions.length === 0) {
+      setPageError("Adaugă cel puțin o întrebare.");
+      return;
+    }
 
-    for (let i = 0; i < questions.length; i++) {
-      const q = questions[i];
-      if (!q.prompt.trim()) { setPageError(`Întrebarea ${i + 1}: textul este obligatoriu.`); return; }
-      if (q.options.length < 2) { setPageError(`Întrebarea ${i + 1}: minim 2 opțiuni.`); return; }
-      for (let j = 0; j < q.options.length; j++) {
-        if (!q.options[j].label.trim()) {
-          setPageError(`Întrebarea ${i + 1}, opțiunea ${j + 1}: textul este obligatoriu.`); return;
+    for (let i = 0; i < questions.length; i += 1) {
+      const question = questions[i];
+      if (!question.prompt.trim()) {
+        setPageError(`Întrebarea ${i + 1}: textul este obligatoriu.`);
+        return;
+      }
+      if (question.options.length < 2) {
+        setPageError(`Întrebarea ${i + 1}: minim 2 opțiuni.`);
+        return;
+      }
+      for (let j = 0; j < question.options.length; j += 1) {
+        if (!question.options[j].label.trim()) {
+          setPageError(`Întrebarea ${i + 1}, opțiunea ${j + 1}: textul este obligatoriu.`);
+          return;
         }
       }
-      if (!q.correctOptionId) {
-        setPageError(`Întrebarea ${i + 1}: selectează răspunsul corect.`); return;
+      if (!question.correctOptionId) {
+        setPageError(`Întrebarea ${i + 1}: selectează răspunsul corect.`);
+        return;
       }
     }
 
@@ -269,10 +417,11 @@ export default function TeacherWorksheetsPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch(
-        editingId ? `/api/worksheets/${editingId}` : "/api/worksheets",
-        { method: editingId ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
-      );
+      const res = await fetch(editingId ? `/api/worksheets/${editingId}` : "/api/worksheets", {
+        method: editingId ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) throw new Error(data.error ?? "Failed to save");
       await loadWorksheets();
@@ -285,469 +434,450 @@ export default function TeacherWorksheetsPage() {
     }
   };
 
-  const handleDeactivate = async (id: string) => {
+  const handleDeleteWorksheet = async (id: string) => {
     setPageError(null);
     try {
       const res = await fetch(`/api/worksheets/${id}`, { method: "DELETE" });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) throw new Error(data.error ?? "Failed");
       await loadWorksheets();
-      setSuccessMsg("Fișa a fost dezactivată.");
+      setSuccessMsg("Fișa a fost ștearsă.");
     } catch (e) {
-      setPageError(e instanceof Error ? e.message : "Failed to deactivate");
+      setPageError(e instanceof Error ? e.message : "Failed to delete");
     }
   };
 
-  /* ── Render ───────────────────────────────────────────────────────────── */
   return (
-    <section className="flex size-full flex-col gap-6" style={{ color: "#1e293b" }}>
+    <section
+      className="-mx-6 -mt-10 flex min-h-[calc(100vh-57px)] flex-col overflow-hidden px-4 py-5 sm:-mx-14 sm:px-8 lg:px-10"
+      style={{
+        background:
+          "radial-gradient(circle at 0% 12%, #f3a9c2 0 76px, transparent 77px)," +
+          "radial-gradient(circle at 100% 42%, #ffe48c 0 150px, transparent 151px)," +
+          "radial-gradient(circle at 4% 92%, #9697f3 0 120px, transparent 121px)," +
+          "#fbf6f1",
+        color: "#17141f",
+      }}
+    >
+      <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-hidden rounded-[28px] bg-white px-6 py-6 shadow-[0_26px_80px_rgba(58,36,72,0.14)] sm:px-9 lg:px-10">
+        <DecorativeDots />
 
-      {/* ── Page header ── */}
-      <div className="relative overflow-hidden rounded-2xl px-6 py-6 text-white" style={premiumSurfaceStyle}>
-        <div
-          className="absolute inset-0 opacity-[0.035]"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 48px)," +
-              "repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 48px)",
-          }}
-        />
-        <div
-          className="absolute -right-20 -top-20 h-56 w-56 rounded-full opacity-[0.08]"
-          style={{ background: "radial-gradient(circle, #4f8ef7 0%, transparent 70%)" }}
-        />
-        <div
-          className="absolute -bottom-10 left-1/3 h-36 w-36 rounded-full opacity-[0.05]"
-          style={{ background: "radial-gradient(circle, #818cf8 0%, transparent 70%)" }}
-        />
+        <div className="relative z-10 flex flex-col gap-6">
+          <section className="relative overflow-hidden rounded-[30px] border border-[#eadfeb] bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_100%)] px-7 py-7 shadow-[0_18px_42px_rgba(58,36,72,0.08)]">
+            <div
+              className="pointer-events-none absolute inset-0 opacity-[0.05]"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(0deg,#df6f98 0,#df6f98 1px,transparent 1px,transparent 48px)," +
+                  "repeating-linear-gradient(90deg,#f6a43a 0,#f6a43a 1px,transparent 1px,transparent 48px)",
+              }}
+            />
+            <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(243,169,194,0.3)_0%,transparent_65%)]" />
+            <div className="pointer-events-none absolute -bottom-12 -left-12 h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(150,151,243,0.2)_0%,transparent_65%)]" />
+            <div className="pointer-events-none absolute bottom-6 right-10 h-24 w-24 rounded-full bg-[radial-gradient(circle,rgba(255,228,140,0.38)_0%,transparent_70%)]" />
 
-        <div className="relative z-10 flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Fișe de lucru</h1>
-            <p className="mt-0.5 text-sm text-white/70">
-              Creează și gestionează fișe interactive pe nivele.
-            </p>
-          </div>
-          {!formOpen && (
-            <button
-              type="button"
-              onClick={openCreate}
-              className="flex items-center gap-2 rounded-xl bg-blue-1 px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ flexShrink: 0 }}
-            >
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} className="h-4 w-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              Fișă nouă
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* ── Toasts ── */}
-      {pageError && (
-        <div className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm"
-          style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626" }}>
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="h-4 w-4 shrink-0">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-          </svg>
-          {pageError}
-        </div>
-      )}
-      {successMsg && (
-        <div className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm"
-          style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#15803d" }}>
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="h-4 w-4 shrink-0">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          {successMsg}
-        </div>
-      )}
-
-      {/* ══ FORM ══════════════════════════════════════════════════════════ */}
-      {formOpen && (
-        <div ref={formRef} className="rounded-2xl"
-          style={panelStyle}>
-
-          {/* form header */}
-          <div className="flex items-center justify-between border-b px-6 py-4"
-            style={{ borderColor: "#f1f5f9" }}>
-            <h2 className="text-base font-bold" style={{ color: "#1e293b" }}>
-              {editingId ? "Editează fișa" : "Fișă nouă"}
-            </h2>
-            <button type="button" onClick={resetForm}
-              className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-slate-100"
-              style={{ color: "#94a3b8" }}>
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <div className="flex flex-col gap-6 px-6 py-5">
-
-            {/* meta fields */}
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="md:col-span-2">
-                <label style={lbl}>Titlu *</label>
-                <input style={inp} value={title} onChange={(e) => setTitle(e.target.value)}
-                  placeholder="ex: A1 — Present Simple Practice"
-                  onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4f8ef7"; }}
-                  onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = "#e2e8f0"; }} />
-              </div>
-
-              <div>
-                <label style={lbl}>Nivel *</label>
-                <select style={{ ...inp, cursor: "pointer" }} value={levelId}
-                  onChange={(e) => setLevelId(e.target.value)}>
-                  {levels.map((l) => (
-                    <option key={l.id} value={l.id}>{l.code} — {l.title}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label style={lbl}>Scor maxim</label>
-                <input style={inp} type="number" value={derivedMaxScore} readOnly />
-                <p className="mt-1 text-xs" style={{ color: "#94a3b8" }}>
-                  Se calculează automat din numărul de întrebări.
-                </p>
-              </div>
-
-              <div>
-                <label style={lbl}>Scor minim de promovare</label>
-                <input style={inp} type="number" value={derivedPassingScore} readOnly />
-                <p className="mt-1 text-xs" style={{ color: "#94a3b8" }}>
-                  Fișa este promovată cu cel puțin 1 răspuns corect.
-                </p>
-              </div>
-
-              <div className="md:col-span-2">
-                <label style={lbl}>Instrucțiuni pentru elev</label>
-                <textarea style={{ ...inp, minHeight: "64px", resize: "vertical" }}
-                  value={instructions} onChange={(e) => setInstructions(e.target.value)}
-                  onFocus={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = "#4f8ef7"; }}
-                  onBlur={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = "#e2e8f0"; }} />
-              </div>
-
-              <div className="md:col-span-2">
-                <label style={lbl}>Descriere (opțional)</label>
-                <textarea style={{ ...inp, minHeight: "56px", resize: "vertical" }}
-                  value={description} onChange={(e) => setDescription(e.target.value)}
-                  onFocus={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = "#4f8ef7"; }}
-                  onBlur={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = "#e2e8f0"; }} />
-              </div>
-
-              {editingId && (
-                <div className="md:col-span-2">
-                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
-                    <div
-                      onClick={() => setIsActive((p) => !p)}
-                      className="relative h-5 w-9 rounded-full transition-colors"
-                      style={{ background: isActive ? "#4f8ef7" : "#cbd5e1", flexShrink: 0 }}>
-                      <div className="absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform"
-                        style={{ transform: isActive ? "translateX(16px)" : "translateX(2px)" }} />
-                    </div>
-                    <span className="text-sm font-medium" style={{ color: "#475569" }}>
-                      Fișă activă {isActive ? "(vizibilă pentru elevi)" : "(ascunsă)"}
-                    </span>
-                  </label>
+            <div className="relative z-10 flex flex-wrap items-start justify-between gap-6">
+              <div className="max-w-2xl">
+                <h1 className="mt-2 text-2xl font-black tracking-[-0.03em] text-[#17141f] sm:text-3xl">
+                  Fișe de lucru
+                </h1>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <StatCard value={worksheets.length} label="fișe" tone="yellow" />
+                  <StatCard value={activeCount} label="active" tone="pink" />
+                  <StatCard value={inactiveCount} label="inactive" tone="violet" />
                 </div>
-              )}
+              </div>
+
+              {!formOpen ? (
+                <button
+                  type="button"
+                  onClick={openCreate}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#9697f3] px-5 py-3 text-sm font-bold text-white shadow-[0_16px_34px_rgba(150,151,243,0.3)] transition hover:bg-[#7f80ea]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                  Fișă nouă
+                </button>
+              ) : null}
             </div>
+          </section>
 
-            {/* ── Question builder ── */}
-            <div>
-              <div className="mb-3 flex items-center justify-between">
+          {pageError ? <FeedbackBanner type="error" message={pageError} /> : null}
+          {successMsg ? <FeedbackBanner type="success" message={successMsg} /> : null}
+
+          {formOpen ? (
+            <section
+              ref={formRef}
+              className="relative overflow-hidden rounded-[28px] border border-[#eadfeb] bg-[#fbf6f1] p-5 shadow-[0_18px_42px_rgba(58,36,72,0.08)] sm:p-6"
+            >
+              <span className="pointer-events-none absolute -right-10 top-4 h-24 w-24 rounded-full bg-[#ffe48c]/40" />
+              <span className="pointer-events-none absolute bottom-3 left-6 h-16 w-16 rounded-full bg-[#9697f3]/15" />
+
+              <div className="relative z-10 mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#94a3b8" }}>
-                    Întrebări — {questions.length} {questions.length === 1 ? "întrebare" : "întrebări"}
+                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#df6f98]">
+                    {editingId ? "Actualizare fișă" : "Fișă nouă"}
                   </p>
-                  <p className="mt-0.5 text-xs" style={{ color: "#cbd5e1" }}>
-                    Bifează opțiunea corectă pentru fiecare întrebare.
-                  </p>
+                  <h2 className="mt-1 text-2xl font-black text-[#17141f]">
+                    {editingId ? "Editează fișa" : "Creează o fișă nouă"}
+                  </h2>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="rounded-full border border-[#eadfeb] bg-white px-4 py-2 text-sm font-semibold text-[#75697c] transition hover:border-[#f0b3c7] hover:text-[#a04469]"
+                >
+                  Închide
+                </button>
               </div>
 
-              <div className="flex flex-col gap-4">
-                {questions.map((q, qIdx) => (
-                  <div key={q.id} className="rounded-xl p-4"
-                    style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0" }}>
+              <div className="relative z-10 flex flex-col gap-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="md:col-span-2">
+                    <FormLabel>Titlu *</FormLabel>
+                    <TextInput
+                      value={title}
+                      onChange={(event) => setTitle(event.target.value)}
+                      placeholder="ex: A1 - Present Simple Practice"
+                    />
+                  </div>
 
-                    {/* question header */}
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
-                        style={{ background: "#4f8ef7" }}>
-                        {qIdx + 1}
-                      </span>
-                      {questions.length > 1 && (
-                        <button type="button" onClick={() => removeQuestion(qIdx)}
-                          className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium transition-colors hover:bg-red-50"
-                          style={{ color: "#ef4444" }}>
-                          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="h-3.5 w-3.5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                          </svg>
-                          Șterge
-                        </button>
-                      )}
+                  <div>
+                    <FormLabel>Nivel *</FormLabel>
+                    <SelectField value={levelId} onChange={setLevelId}>
+                      {levels.map((level) => (
+                        <option key={level.id} value={level.id}>
+                          {level.code} - {level.title}
+                        </option>
+                      ))}
+                    </SelectField>
+                  </div>
+
+                  <div>
+                    <FormLabel>Scor maxim</FormLabel>
+                    <TextInput type="number" readOnly value={derivedMaxScore} />
+                    <p className="mt-2 text-xs text-[#8b7c8f]">Se calculează automat din numărul de întrebări.</p>
+                  </div>
+
+                  <div>
+                    <FormLabel>Scor minim de promovare</FormLabel>
+                    <TextInput type="number" readOnly value={derivedPassingScore} />
+                    <p className="mt-2 text-xs text-[#8b7c8f]">Fișa este promovată cu cel puțin 1 răspuns corect.</p>
+                  </div>
+
+                  {editingId ? (
+                    <div className="flex items-end">
+                      <button
+                        type="button"
+                        onClick={() => setIsActive((prev) => !prev)}
+                        className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                          isActive
+                            ? "border-[#c7ecd6] bg-[#effcf4] text-[#198754]"
+                            : "border-[#d7d7fb] bg-[#efefff] text-[#6465c8]"
+                        }`}
+                      >
+                        <span className={`h-2.5 w-2.5 rounded-full ${isActive ? "bg-[#26b36d]" : "bg-[#9697f3]"}`} />
+                        {isActive ? "Fișă activă" : "Fișă inactivă"}
+                      </button>
                     </div>
+                  ) : null}
 
-                    {/* prompt */}
-                    <div className="mb-3">
-                      <label style={{ ...lbl, marginBottom: "6px" }}>Textul întrebării *</label>
-                      <input style={{ ...inp, background: "#fff" }}
-                        value={q.prompt}
-                        onChange={(e) => updateQuestion(qIdx, { prompt: e.target.value })}
-                        placeholder="ex: Maggie and Carol ______ good friends."
-                        onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#4f8ef7"; }}
-                        onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = "#e2e8f0"; }} />
-                    </div>
+                  <div className="md:col-span-2">
+                    <FormLabel>Instrucțiuni pentru elev</FormLabel>
+                    <TextArea
+                      value={instructions}
+                      onChange={(event) => setInstructions(event.target.value)}
+                      className="min-h-[92px] resize-y"
+                    />
+                  </div>
 
-                    {/* options */}
-                    <div className="flex flex-col gap-2">
-                      <label style={lbl}>Opțiuni — bifează răspunsul corect</label>
-                      {q.options.map((opt, oIdx) => {
-                        const isCorrect = q.correctOptionId === opt.id;
-                        const optLabel = String.fromCharCode(65 + oIdx); // A, B, C, D…
+                  <div className="md:col-span-2">
+                    <FormLabel>Descriere</FormLabel>
+                    <TextArea
+                      value={description}
+                      onChange={(event) => setDescription(event.target.value)}
+                      className="min-h-[88px] resize-y"
+                      placeholder="Descriere scurtă pentru această fișă..."
+                    />
+                  </div>
+                </div>
 
-                        return (
-                          <div key={opt.id} className="flex items-center gap-2">
-                            {/* correct toggle */}
-                            <button
-                              type="button"
-                              onClick={() => setCorrect(qIdx, opt.id)}
-                              title="Marchează ca răspuns corect"
-                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all"
-                              style={{
-                                borderColor: isCorrect ? "#10b981" : "#e2e8f0",
-                                background: isCorrect ? "#10b981" : "transparent",
-                                color: isCorrect ? "#fff" : "#94a3b8",
-                              }}
-                            >
-                              {isCorrect ? (
-                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} className="h-3.5 w-3.5">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                                </svg>
-                              ) : (
-                                <span className="text-[10px] font-bold">{optLabel}</span>
-                              )}
-                            </button>
-
-                            {/* option text */}
-                            <input
-                              style={{
-                                ...inp, background: isCorrect ? "rgba(16,185,129,0.04)" : "#fff",
-                                borderColor: isCorrect ? "rgba(16,185,129,0.4)" : "#e2e8f0", flex: 1
-                              }}
-                              value={opt.label}
-                              onChange={(e) => updateOption(qIdx, oIdx, e.target.value)}
-                              placeholder={`Opțiunea ${optLabel}`}
-                              onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = isCorrect ? "#10b981" : "#4f8ef7"; }}
-                              onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = isCorrect ? "rgba(16,185,129,0.4)" : "#e2e8f0"; }}
-                            />
-
-                            {/* remove option */}
-                            {q.options.length > 2 && (
-                              <button type="button" onClick={() => removeOption(qIdx, oIdx)}
-                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-red-50"
-                                style={{ color: "#cbd5e1" }}
-                                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#ef4444"; }}
-                                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#cbd5e1"; }}>
-                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} className="h-3.5 w-3.5">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-
-                      {/* add option */}
-                      {q.options.length < 6 && (
-                        <button type="button" onClick={() => addOption(qIdx)}
-                          className="mt-1 flex items-center gap-1.5 text-xs font-semibold transition-colors"
-                          style={{ color: "#94a3b8" }}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#4f8ef7"; }}
-                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#94a3b8"; }}>
-                          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} className="h-3.5 w-3.5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                          </svg>
-                          Adaugă opțiune
-                        </button>
-                      )}
+                <div className="rounded-3xl border border-[#eadfeb] bg-white/80 p-4 sm:p-5">
+                  <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#df6f98]">
+                        Întrebări
+                      </p>
+                      <h3 className="mt-1 text-xl font-black text-[#17141f]">
+                        {questions.length} {questions.length === 1 ? "întrebare" : "întrebări"}
+                      </h3>
+                      <p className="mt-1 text-sm text-[#7c7081]">Bifează răspunsul corect pentru fiecare întrebare.</p>
                     </div>
                   </div>
+
+                  <div className="flex flex-col gap-4">
+                    {questions.map((question, questionIndex) => (
+                      <div
+                        key={question.id}
+                        className="rounded-3xl border border-[#eadfeb] bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_100%)] p-4 shadow-[0_10px_24px_rgba(58,36,72,0.05)]"
+                      >
+                        <div className="mb-4 flex items-center justify-between gap-3">
+                          <div className="inline-flex items-center gap-3">
+                            <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#9697f3] text-sm font-black text-white shadow-[0_10px_18px_rgba(150,151,243,0.28)]">
+                              {questionIndex + 1}
+                            </span>
+                            <div>
+                              <p className="text-sm font-black text-[#17141f]">Întrebarea {questionIndex + 1}</p>
+                              <p className="text-xs text-[#8b7c8f]">Alege o singură variantă corectă</p>
+                            </div>
+                          </div>
+
+                          {questions.length > 1 ? (
+                            <button
+                              type="button"
+                              onClick={() => removeQuestion(questionIndex)}
+                              className="rounded-full border border-[#f4c4cd] bg-[#fff2f4] px-3 py-1.5 text-xs font-bold text-[#c94b6c] transition hover:bg-[#ffe7eb]"
+                            >
+                              Șterge
+                            </button>
+                          ) : null}
+                        </div>
+
+                        <div className="mb-4">
+                          <FormLabel>Textul întrebării *</FormLabel>
+                          <TextInput
+                            value={question.prompt}
+                            onChange={(event) => updateQuestion(questionIndex, { prompt: event.target.value })}
+                            placeholder="ex: Maggie and Carol ______ good friends."
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                          <FormLabel>Opțiuni</FormLabel>
+                          {question.options.map((option, optionIndex) => {
+                            const isCorrect = question.correctOptionId === option.id;
+                            const optionLetter = String.fromCharCode(65 + optionIndex);
+
+                            return (
+                              <div key={option.id} className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setCorrect(questionIndex, option.id)}
+                                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border-2 text-sm font-black transition ${
+                                    isCorrect
+                                      ? "border-[#26b36d] bg-[#26b36d] text-white"
+                                      : "border-[#d7d7fb] bg-[#efefff] text-[#6465c8]"
+                                  }`}
+                                >
+                                  {isCorrect ? "✓" : optionLetter}
+                                </button>
+
+                                <TextInput
+                                  value={option.label}
+                                  onChange={(event) => updateOption(questionIndex, optionIndex, event.target.value)}
+                                  placeholder={`Opțiunea ${optionLetter}`}
+                                  className={isCorrect ? "border-[#c7ecd6] bg-[#f7fffa]" : ""}
+                                />
+
+                                {question.options.length > 2 ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeOption(questionIndex, optionIndex)}
+                                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[#eadfeb] bg-white text-[#8b7c8f] transition hover:border-[#f0b3c7] hover:bg-[#fff2f4] hover:text-[#c94b6c]"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                ) : null}
+                              </div>
+                            );
+                          })}
+
+                          {question.options.length < 6 ? (
+                            <button
+                              type="button"
+                              onClick={() => addOption(questionIndex)}
+                              className="mt-1 inline-flex w-fit items-center gap-2 rounded-full border border-[#d7d7fb] bg-[#efefff] px-4 py-2 text-sm font-bold text-[#6465c8] transition hover:bg-[#e5e5ff]"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                              </svg>
+                              Adaugă opțiune
+                            </button>
+                          ) : null}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={addQuestion}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-[22px] border-2 border-dashed border-[#d7d7fb] bg-white/60 py-4 text-sm font-bold text-[#6465c8] transition hover:bg-[#efefff]"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Adaugă întrebare
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 border-t border-[#f1e4ec] pt-4">
+                  <button
+                    type="button"
+                    disabled={submitting}
+                    onClick={handleSubmit}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#9697f3] px-5 py-3 text-sm font-bold text-white shadow-[0_16px_34px_rgba(150,151,243,0.3)] transition hover:bg-[#7f80ea] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {submitting ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : null}
+                    {submitting ? "Se salvează..." : editingId ? "Actualizează fișa" : "Creează fișa"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="rounded-full border border-[#eadfeb] bg-white px-5 py-3 text-sm font-semibold text-[#75697c] transition hover:border-[#f0b3c7] hover:text-[#a04469]"
+                  >
+                    Anulează
+                  </button>
+                </div>
+              </div>
+            </section>
+          ) : null}
+
+          <section className="rounded-[28px] bg-[#fbf6f1] p-4 sm:p-5">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 className="mt-1.5 text-2xl font-black text-[#17141f]">Fișele create</h2>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <div className="min-w-[210px]">
+                  <SelectField value={levelFilter} onChange={setLevelFilter}>
+                    <option value="all">Toate nivelele</option>
+                    {levels.map((level) => (
+                      <option key={level.id} value={level.id}>
+                        {level.code} - {level.title}
+                      </option>
+                    ))}
+                  </SelectField>
+                </div>
+
+                <div className="min-w-[210px]">
+                  <SelectField value={activeFilter} onChange={(value) => setActiveFilter(value as ActiveFilter)}>
+                    <option value="all">Toate statusurile</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </SelectField>
+                </div>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="grid gap-4 xl:grid-cols-2">
+                {[1, 2, 3, 4].map((item) => (
+                  <div
+                    key={item}
+                    className="h-44 animate-pulse rounded-[26px] border border-[#eadfeb] bg-white/80"
+                  />
                 ))}
               </div>
+            ) : worksheets.length === 0 ? (
+              <EmptyState onCreateClick={openCreate} />
+            ) : (
+              <div className="grid gap-4 xl:grid-cols-2">
+                {worksheets.map((worksheet) => (
+                  <article
+                    key={worksheet.id}
+                    className="group relative overflow-hidden rounded-[28px] border border-[#eadfeb] bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_100%)] p-5 shadow-[0_14px_32px_rgba(58,36,72,0.08)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_38px_rgba(58,36,72,0.12)]"
+                  >
+                    <div
+                      className="pointer-events-none absolute inset-0 opacity-[0.05]"
+                      style={{
+                        backgroundImage:
+                          "repeating-linear-gradient(0deg,#df6f98 0,#df6f98 1px,transparent 1px,transparent 48px)," +
+                          "repeating-linear-gradient(90deg,#f6a43a 0,#f6a43a 1px,transparent 1px,transparent 48px)",
+                      }}
+                    />
+                    <div className="pointer-events-none absolute -right-16 top-6 h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(255,228,140,0.35)_0%,transparent_70%)]" />
+                    <div className="pointer-events-none absolute -bottom-10 left-6 h-24 w-24 rounded-full bg-[radial-gradient(circle,rgba(150,151,243,0.18)_0%,transparent_70%)]" />
 
-              {/* add question */}
-              <button type="button" onClick={addQuestion}
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all"
-                style={{ border: "2px dashed #e2e8f0", color: "#94a3b8", background: "transparent" }}
-                onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.borderColor = "#4f8ef7"; el.style.color = "#4f8ef7"; el.style.background = "rgba(79,142,247,0.04)"; }}
-                onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.borderColor = "#e2e8f0"; el.style.color = "#94a3b8"; el.style.background = "transparent"; }}>
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} className="h-4 w-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                Adaugă întrebare
-              </button>
-            </div>
+                    <div className="relative z-10 flex h-full flex-col">
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[#d7d7fb] bg-[#efefff] text-[#6465c8] shadow-[0_10px_24px_rgba(150,151,243,0.16)]">
+                          <WorksheetIcon />
+                        </div>
 
-            {/* form actions */}
-            <div className="flex items-center gap-3 border-t pt-4" style={{ borderColor: "#f1f5f9" }}>
-              <button type="button" disabled={submitting} onClick={handleSubmit}
-                className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                style={{ background: "#4f8ef7" }}>
-                {submitting ? (
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white" />
-                ) : (
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} className="h-4 w-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                  </svg>
-                )}
-                {submitting ? "Se salvează..." : editingId ? "Actualizează fișa" : "Creează fișa"}
-              </button>
-              <button type="button" onClick={resetForm}
-                className="rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-slate-50"
-                style={{ color: "#64748b", border: "1.5px solid #e2e8f0" }}>
-                Anulează
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="rounded-full border border-[#f6d98d] bg-[#fff4c9] px-3 py-1 text-xs font-bold text-[#8a6122]">
+                              {worksheet.level.code}
+                            </span>
+                            <span
+                              className={`rounded-full border px-3 py-1 text-xs font-bold ${
+                                worksheet.isActive
+                                  ? "border-[#c7ecd6] bg-[#effcf4] text-[#198754]"
+                                  : "border-[#d7d7fb] bg-[#efefff] text-[#6465c8]"
+                              }`}
+                            >
+                              {worksheet.isActive ? "Activă" : "Inactivă"}
+                            </span>
+                          </div>
 
-      {/* ══ WORKSHEETS TABLE ══════════════════════════════════════════════ */}
-      <div className="rounded-2xl"
-        style={panelStyle}>
+                          <h3 className="mt-3 text-xl font-black leading-tight text-[#17141f]">{worksheet.title}</h3>
+                          <p className="mt-1 text-sm text-[#75697c]">
+                            {worksheet.description?.trim() || "Fără descriere adăugată pentru această fișă."}
+                          </p>
+                        </div>
+                      </div>
 
-        {/* table header */}
-        <div className="flex flex-wrap items-center gap-3 border-b bg-slate-50/80 px-6 py-4" style={{ borderColor: "#e2e8f0" }}>
-          <h2 className="mr-auto text-sm font-bold" style={{ color: "#1e293b" }}>
-            Biblioteca de fișe
-            {worksheets.length > 0 && (
-              <span className="ml-2 rounded-full px-2 py-0.5 text-xs font-semibold"
-                style={{ background: "rgba(79,142,247,0.08)", color: "#4f8ef7" }}>
-                {worksheets.length}
-              </span>
-            )}
-          </h2>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-2xl bg-white/80 px-4 py-3">
+                          <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#8b7c8f]">Întrebări</p>
+                          <p className="mt-1 text-lg font-black text-[#17141f]">{worksheet.maxScore}</p>
+                        </div>
+                        <div className="rounded-2xl bg-white/80 px-4 py-3">
+                          <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#8b7c8f]">Scor minim</p>
+                          <p className="mt-1 text-lg font-black text-[#17141f]">{worksheet.passingScore ?? "—"}</p>
+                        </div>
+                      </div>
 
-          {/* filters */}
-          {[
-            { value: levelFilter, onChange: setLevelFilter, options: [{ value: "all", label: "Toate nivelele" }, ...levels.map((l) => ({ value: l.id, label: `${l.code} — ${l.title}` }))] },
-            { value: activeFilter, onChange: (v: string) => setActiveFilter(v as ActiveFilter), options: [{ value: "all", label: "Toate statusurile" }, { value: "active", label: "Active" }, { value: "inactive", label: "Inactive" }] },
-          ].map((sel, i) => (
-            <select key={i} value={sel.value}
-              onChange={(e) => sel.onChange(e.target.value)}
-              className="rounded-xl px-3 py-2 text-sm font-medium outline-none transition-colors"
-              style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", color: "#475569", cursor: "pointer" }}>
-              {sel.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          ))}
-        </div>
+                      <div className="mt-4 rounded-2xl bg-white/80 px-4 py-3">
+                        <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#8b7c8f]">Instrucțiuni</p>
+                        <p className="mt-2 text-sm leading-6 text-[#7c7081]">
+                          {worksheet.instructions?.trim() || "Fără instrucțiuni suplimentare pentru elev."}
+                        </p>
+                      </div>
 
-        {loading ? (
-          <div className="flex flex-col gap-0">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 border-b px-6 py-4 animate-pulse"
-                style={{ borderColor: "#f8fafc" }}>
-                <div className="h-4 w-48 rounded" style={{ background: "#e8edf4" }} />
-                <div className="h-5 w-10 rounded-full ml-2" style={{ background: "#e8edf4" }} />
-                <div className="ml-auto h-4 w-16 rounded" style={{ background: "#e8edf4" }} />
-              </div>
-            ))}
-          </div>
-        ) : worksheets.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl"
-              style={{ background: "rgba(79,142,247,0.08)" }}>
-              <svg fill="none" viewBox="0 0 24 24" stroke="#4f8ef7" strokeWidth={1.5} className="h-6 w-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-              </svg>
-            </div>
-            <p className="text-sm font-medium" style={{ color: "#64748b" }}>Nicio fișă găsită.</p>
-            <button type="button" onClick={openCreate}
-              className="text-sm font-semibold hover:underline" style={{ color: "#4f8ef7" }}>
-              Creează prima fișă →
-            </button>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse" style={{ fontSize: "13px" }}>
-              <thead>
-                <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-                  {["Titlu", "Nivel", "Întrebări", "Scor minim", "Status", "Acțiuni"].map((h) => (
-                    <th key={h} className="px-5 py-2.5 text-left"
-                      style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "#94a3b8" }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {worksheets.map((ws, i) => (
-                  <tr key={ws.id}
-                    style={{ borderBottom: i < worksheets.length - 1 ? "1px solid #f8fafc" : "none" }}
-                    className="group transition-colors hover:bg-slate-50">
-
-                    <td className="px-5 py-3">
-                      <p className="font-semibold" style={{ color: "#1e293b" }}>{ws.title}</p>
-                      {ws.description && (
-                        <p className="mt-0.5 line-clamp-1 text-xs" style={{ color: "#94a3b8" }}>{ws.description}</p>
-                      )}
-                    </td>
-
-                    <td className="px-5 py-3">
-                      <span className="rounded-full px-2.5 py-1 text-xs font-bold"
-                        style={{ background: "rgba(240,165,0,0.1)", color: "#b45309" }}>
-                        {ws.level.code}
-                      </span>
-                    </td>
-
-                    <td className="px-5 py-3">
-                      <span className="font-semibold" style={{ color: "#475569" }}>
-                        {ws.maxScore}
-                      </span>
-                    </td>
-
-                    <td className="px-5 py-3" style={{ color: "#64748b" }}>
-                      {ws.passingScore !== null ? ws.passingScore : <span style={{ color: "#cbd5e1" }}>—</span>}
-                    </td>
-
-                    <td className="px-5 py-3">
-                      <span className="rounded-full px-2.5 py-1 text-xs font-semibold"
-                        style={ws.isActive
-                          ? { background: "rgba(16,185,129,0.1)", color: "#059669" }
-                          : { background: "#f1f5f9", color: "#94a3b8" }}>
-                        {ws.isActive ? "Activă" : "Inactivă"}
-                      </span>
-                    </td>
-
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-2">
-                        <button type="button" onClick={() => openEdit(ws)}
-                          className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-slate-100"
-                          style={{ color: "#475569", border: "1px solid #e2e8f0" }}>
+                      <div className="mt-5 flex flex-wrap gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(worksheet)}
+                          className="rounded-full border border-[#d7d7fb] bg-[#efefff] px-4 py-2 text-sm font-bold text-[#6465c8] transition hover:bg-[#e5e5ff]"
+                        >
                           Editează
                         </button>
-                        {ws.isActive && (
-                          <button type="button" onClick={() => handleDeactivate(ws.id)}
-                            className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
-                            style={{ color: "#dc2626", border: "1px solid #fecaca", background: "transparent" }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#fef2f2"; }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                            Dezactivează
+
+                        {worksheet.isActive ? (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteWorksheet(worksheet.id)}
+                            className="rounded-full border border-[#f4c4cd] bg-[#fff2f4] px-4 py-2 text-sm font-bold text-[#c94b6c] transition hover:bg-[#ffe7eb]"
+                          >
+                            Șterge fișa
                           </button>
-                        )}
+                        ) : null}
                       </div>
-                    </td>
-                  </tr>
+                    </div>
+                  </article>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </section>
   );

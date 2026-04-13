@@ -3,6 +3,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import AuthShell from "@/components/auth/AuthShell";
 
 type PendingRole = "STUDENT" | "TEACHER_ADMIN";
 
@@ -84,38 +85,54 @@ export default function CompleteSignUpPage() {
   }, [isLoaded, isSignedIn, router]);
 
   return (
-    <main className="flex h-screen w-full items-center justify-center bg-dark-2 px-6">
-      <div className="w-full max-w-md rounded-2xl border border-dark-3 bg-dark-1 p-6 text-center text-white">
-        <h1 className="text-2xl font-semibold">Finalizăm înregistrarea...</h1>
-        <p className="mt-3 text-sm text-sky-1">
-          Salvăm rolul tău și pregătim contul.
+    <AuthShell
+      title="Finalizăm înregistrarea"
+      subtitle="Asociem rolul ales cu noul cont și pregătim accesul către experiența potrivită din platformă."
+      hideIntroPanel
+      hideAsideCard
+      asideTitle="Încă un pas și ești gata"
+      asideDescription="După confirmare, platforma îți pregătește accesul în funcție de rolul ales la înregistrare."
+    >
+      <div className="text-center">
+        <h2 className="text-3xl font-black tracking-[-0.03em] text-[#17141f]">
+          Pregătim contul tău
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-[#75697c]">
+          Salvăm rolul tău și configurăm pașii următori.
         </p>
+
         {error ? (
-          <div className="mt-4 rounded-md border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200">
+          <div className="mt-5 rounded-2xl border border-[#f0b3c7] bg-[#fff1f5] px-4 py-3 text-sm text-[#a04469]">
             {error}
           </div>
         ) : (
-          <p className="mt-4 text-xs text-gray-400">Te rog așteaptă puțin.</p>
+          <div className="mt-6">
+            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#eadfeb] border-t-[#6465c8]" />
+            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#9697f3]">
+              Te rog așteaptă puțin
+            </p>
+          </div>
         )}
+
         {error ? (
-          <div className="mt-4 flex items-center justify-center gap-3">
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="rounded-md bg-blue-1 px-3 py-2 text-xs font-medium text-white"
+              className="rounded-2xl bg-[#6465c8] px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(100,101,200,0.24)] transition hover:bg-[#5557b8]"
             >
               Reîncearcă
             </button>
             <button
               type="button"
               onClick={() => router.push("/sign-up-role")}
-              className="rounded-md border border-dark-3 px-3 py-2 text-xs font-medium text-gray-200"
+              className="rounded-2xl border border-[#eadfeb] bg-[#fff8f1] px-4 py-3 text-sm font-semibold text-[#17141f] transition hover:bg-[#ffeef4]"
             >
               Alege din nou rolul
             </button>
           </div>
         ) : null}
       </div>
-    </main>
+    </AuthShell>
   );
 }

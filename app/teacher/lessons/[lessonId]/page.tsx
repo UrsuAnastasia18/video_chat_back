@@ -2,6 +2,11 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import {
+  StudentEmptyState,
+  StudentError,
+  StudentPanel,
+} from "@/components/student/StudentShell";
 
 type LessonDetails = {
   id: string;
@@ -314,6 +319,23 @@ export default function TeacherLessonGradesPage() {
 
   const formatDateTime = (value: string) => new Date(value).toLocaleString();
 
+  const canOpenLessonMeeting = (targetLesson: LessonDetails) => {
+    if (!targetLesson.streamCallId) return false;
+    if (targetLesson.status === "COMPLETED" || targetLesson.status === "CANCELLED") {
+      return false;
+    }
+
+    return new Date(targetLesson.scheduledEnd).getTime() >= Date.now();
+  };
+
+  const getLessonStatusLabel = (status: LessonDetails["status"]) => {
+    if (status === "SCHEDULED") return "Programată";
+    if (status === "LIVE") return "În desfășurare";
+    if (status === "COMPLETED") return "Finalizată";
+    if (status === "CANCELLED") return "Anulată";
+    return status;
+  };
+
   const getAttendanceBadgeClassName = (status: AttendanceStatus) => {
     if (status === "PRESENT") {
       return "bg-emerald-100 text-emerald-700 border border-emerald-200";
@@ -355,171 +377,183 @@ export default function TeacherLessonGradesPage() {
   };
 
   return (
-    <section className="flex size-full flex-col gap-6 text-black">
-      <div>
-        <h1 className="text-3xl font-bold">Panoul lecției</h1>
-        <p className="text-sm text-slate-500">
-          Vezi contextul lecției, linkul ședinței, înregistrările și notele manuale într-un singur loc.
-        </p>
-      </div>
+    <section
+      className="-mx-7 -my-7 flex min-h-[calc(100vh-57px)] flex-col overflow-hidden px-4 py-5 sm:-mx-10 sm:-my-8 sm:px-8 lg:px-10"
+      style={{
+        background:
+          "radial-gradient(circle at 0% 12%, #f3a9c2 0 76px, transparent 77px)," +
+          "radial-gradient(circle at 100% 42%, #ffe48c 0 150px, transparent 151px)," +
+          "radial-gradient(circle at 4% 92%, #9697f3 0 120px, transparent 121px)," +
+          "#fbf6f1",
+        color: "#17141f",
+      }}
+    >
+      <div className="relative mx-auto flex w-full flex-1 flex-col gap-6 overflow-hidden rounded-[28px] bg-white px-6 py-6 shadow-[0_26px_80px_rgba(58,36,72,0.14)] sm:px-8 lg:px-10">
+        <span className="pointer-events-none absolute -left-12 top-20 h-28 w-28 rounded-full bg-[#f3a9c2]/70" />
+        <span className="pointer-events-none absolute -right-16 top-40 h-40 w-40 rounded-full bg-[#ffe48c]/80" />
+        <span className="pointer-events-none absolute bottom-16 left-8 h-20 w-20 rounded-full bg-[#9697f3]/75" />
+        <span className="pointer-events-none absolute right-20 top-24 h-5 w-5 rounded-full bg-[#eaa0bd]" />
+        <span className="pointer-events-none absolute right-56 top-32 h-3 w-3 rounded-full bg-[#9697f3]" />
+        <span className="pointer-events-none absolute right-80 top-36 h-4 w-4 rounded-full bg-[#ffe17e]" />
 
-      {error ? (
-        <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </div>
-      ) : null}
+        <div className="relative z-10 flex flex-col gap-6">
+      {error ? <StudentError message={error} /> : null}
 
       {loading ? (
-        <p className="text-sm text-slate-500">Se încarcă datele lecției...</p>
-      ) : !lesson ? (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
-          Lecția nu a fost găsită.
+        <div className="grid gap-4 md:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-40 animate-pulse rounded-[28px]"
+              style={{ background: "#f7ecf1", animationDelay: `${index * 55}ms` }}
+            />
+          ))}
         </div>
+      ) : !lesson ? (
+        <StudentEmptyState
+          title="Lecția nu a fost găsită"
+          description="Verifică linkul accesat sau revino în lista lecțiilor pentru a selecta o altă ședință."
+        />
       ) : (
         <>
-          <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <h2 className="text-xl font-semibold text-slate-900">Prezentare generală</h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Contextul academic pentru această lecție programată.
-            </p>
-
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Titlul lecției
-                </p>
-                <p className="mt-1 text-base font-semibold text-slate-900">{lesson.title}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Status
-                </p>
-                <p className="mt-1 text-base font-semibold text-slate-900">{lesson.status}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Grupă
-                </p>
-                <p className="mt-1 text-base text-slate-800">{lesson.group.name}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Nivel
-                </p>
-                <p className="mt-1 text-base text-slate-800">
-                  {lesson.group.level.code} - {lesson.group.level.title}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Începe la
-                </p>
-                <p className="mt-1 text-base text-slate-800">
-                  {formatDateTime(lesson.scheduledStart)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Se încheie la
-                </p>
-                <p className="mt-1 text-base text-slate-800">
-                  {formatDateTime(lesson.scheduledEnd)}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Descriere
-              </p>
-              <p className="mt-1 text-sm text-slate-700">
-                {lesson.description?.trim() ? lesson.description : "Nu a fost adăugată nicio descriere."}
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <h3 className="text-lg font-semibold text-slate-900">Apel video asociat</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Apelul asociat acestei lecții este folosit pentru acces și înregistrări.
-            </p>
-
-            {lesson.streamCallId ? (
-              <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-emerald-700">Apel asociat</p>
+          <section className="rounded-3xl border border-[#eadfeb] bg-white px-6 py-5 shadow-[0_12px_28px_rgba(58,36,72,0.06)]">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <h1 className="text-3xl font-black tracking-tight text-[#17141f]">
+                {lesson.title}
+              </h1>
+              {canOpenLessonMeeting(lesson) ? (
                 <a
                   href={`/meeting/${lesson.streamCallId}`}
-                  className="mt-3 inline-flex rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex items-center rounded-full border border-[#d8cff8] bg-[#9697f3] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(150,151,243,0.24)] transition-colors hover:bg-[#7c7de8]"
                 >
                   Deschide ședința
                 </a>
-                <p className="mt-3 text-xs text-slate-500">ID apel: {lesson.streamCallId}</p>
+              ) : lesson.streamCallId ? (
+                <div className="rounded-full border border-[#eadfeb] bg-[#fcfafc] px-4 py-2 text-sm font-medium text-[#8b7c8f]">
+                  Ședință încheiată
+                </div>
+              ) : (
+                <div className="rounded-full border border-[#eadfeb] bg-[#fcfafc] px-4 py-2 text-sm font-medium text-[#8b7c8f]">
+                  Fără apel asociat
+                </div>
+              )}
+            </div>
+          </section>
+
+          <div className="grid gap-6">
+            <StudentPanel title="Prezentare generală">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {[
+                  { label: "Titlul lecției", value: lesson.title, accent: "#ffe6ef" },
+                  { label: "Status", value: getLessonStatusLabel(lesson.status), accent: "#fff4c9" },
+                  { label: "Grupă", value: lesson.group.name, accent: "#ededff" },
+                  {
+                    label: "Nivel",
+                    value: `${lesson.group.level.code} - ${lesson.group.level.title}`,
+                    accent: "#fff0bf",
+                  },
+                  { label: "Începe la", value: formatDateTime(lesson.scheduledStart), accent: "#e9fff1" },
+                  { label: "Se încheie la", value: formatDateTime(lesson.scheduledEnd), accent: "#fff8f1" },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-3xl border p-3 xl:min-h-[132px]"
+                    style={{
+                      borderColor: "rgba(234,223,235,0.95)",
+                      background: "linear-gradient(180deg, #ffffff 0%, #fff8f1 100%)",
+                    }}
+                  >
+                    <div
+                      className="mb-2 h-7 w-7 rounded-xl"
+                      style={{ background: item.accent }}
+                    />
+                    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#8b7c8f]">
+                      {item.label}
+                    </p>
+                    <p className="mt-1 text-[15px] font-semibold leading-5 text-[#17141f]">
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
+                <div
+                  className="rounded-3xl border p-3 xl:min-h-[132px]"
+                  style={{
+                    background: "#fff8f1",
+                    borderColor: "rgba(234,223,235,0.95)",
+                  }}
+                >
+                  <div
+                    className="mb-2 h-7 w-7 rounded-xl"
+                    style={{ background: "#fff0bf" }}
+                  />
+                  <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#df6f98]">
+                    Descriere
+                  </p>
+                  <p className="mt-1 text-[14px] leading-5 text-[#5f5564]">
+                    {lesson.description?.trim()
+                      ? lesson.description
+                      : "Nu a fost adăugată nicio descriere pentru această lecție."}
+                  </p>
+                </div>
               </div>
-            ) : (
-              <div className="mt-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
-                Încă nu există un apel asociat.
-              </div>
-            )}
+            </StudentPanel>
+
+            
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <h3 className="text-lg font-semibold text-slate-900">Prezență</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Marchează manual fiecare elev ca prezent sau absent pentru această lecție.
-            </p>
-
-            {attendanceError ? (
-              <p className="mt-3 text-sm text-red-600">{attendanceError}</p>
-            ) : null}
+          <StudentPanel title="Prezență">
+            {attendanceError ? <StudentError message={attendanceError} /> : null}
 
             {attendanceLoading ? (
-              <p className="mt-3 text-sm text-slate-500">Se încarcă prezența...</p>
+              <p className="text-sm text-[#75697c]">Se încarcă prezența...</p>
             ) : attendance.length === 0 ? (
-              <p className="mt-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
-                Nu există elevi activi disponibili pentru prezență.
-              </p>
+              <StudentEmptyState
+                title="Nu există elevi pentru prezență"
+                description="Grupa lecției nu are elevi activi disponibili în acest moment."
+              />
             ) : (
-              <ul className="mt-4 space-y-3">
+              <ul className="grid gap-4 lg:grid-cols-2">
                 {attendance.map((row) => {
                   const isUpdating = attendanceUpdating[row.userId] ?? false;
 
                   return (
                     <li
                       key={row.userId}
-                      className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+                      className="rounded-3xl border p-4"
+                      style={{
+                        background: "linear-gradient(180deg, #ffffff 0%, #fff8f1 100%)",
+                        borderColor: "rgba(234,223,235,0.95)",
+                      }}
                     >
-                      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900">
-                            {row.firstName} {row.lastName}
-                          </p>
-                          <p className="text-xs text-slate-500">{row.email}</p>
-                          <div className="mt-2 flex items-center gap-2">
-                            <span
-                              className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${getAttendanceBadgeClassName(
-                                row.status
-                              )}`}
-                            >
-                              {row.status}
-                            </span>
-                            {row.markedAt ? (
-                              <span className="text-xs text-slate-500">
-                                Marcat: {formatDateTime(row.markedAt)}
-                              </span>
-                            ) : (
-                              <span className="text-xs text-slate-500">
-                                Încă nemarcat
-                              </span>
-                            )}
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-base font-bold text-[#17141f]">
+                              {row.firstName} {row.lastName}
+                            </p>
+                            <p className="text-sm text-[#75697c]">{row.email}</p>
                           </div>
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getAttendanceBadgeClassName(
+                              row.status
+                            )}`}
+                          >
+                            {row.status}
+                          </span>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <p className="text-xs text-[#8b7c8f]">
+                          {row.markedAt
+                            ? `Marcat: ${formatDateTime(row.markedAt)}`
+                            : "Încă nemarcat"}
+                        </p>
+
+                        <div className="flex flex-wrap items-center gap-2">
                           <button
                             type="button"
                             disabled={isUpdating}
                             onClick={() => handleMarkAttendance(row.userId, "PRESENT")}
-                            className="rounded bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+                            className="rounded-full bg-[#1fa56f] px-4 py-2 text-xs font-semibold text-white shadow-[0_10px_20px_rgba(31,165,111,0.2)] disabled:opacity-60"
                           >
                             Prezent
                           </button>
@@ -527,7 +561,7 @@ export default function TeacherLessonGradesPage() {
                             type="button"
                             disabled={isUpdating}
                             onClick={() => handleMarkAttendance(row.userId, "ABSENT")}
-                            className="rounded bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+                            className="rounded-full bg-[#df6f98] px-4 py-2 text-xs font-semibold text-white shadow-[0_10px_20px_rgba(223,111,152,0.2)] disabled:opacity-60"
                           >
                             Absent
                           </button>
@@ -538,171 +572,178 @@ export default function TeacherLessonGradesPage() {
                 })}
               </ul>
             )}
-          </div>
+          </StudentPanel>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <h3 className="text-lg font-semibold text-slate-900">Înregistrările lecției</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Înregistrări din apelul asociat lecției.
-            </p>
-            {recordingsLoading ? (
-              <p className="mt-2 text-sm text-slate-500">Se încarcă înregistrările...</p>
-            ) : recordingsError ? (
-              <p className="mt-2 text-sm text-red-600">{recordingsError}</p>
-            ) : recordings.length === 0 ? (
-              <p className="mt-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
-                {lesson.streamCallId
-                  ? "Încă nu există înregistrări pentru acest apel asociat."
-                  : "Nu există niciun apel asociat pentru această lecție."}
-              </p>
-            ) : (
-              <ul className="mt-3 space-y-2">
-                {recordings.map((recording) => (
-                  <li
-                    key={recording.id}
-                    className="flex items-center justify-between rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
-                  >
-                    <div>
-                      <p className="font-semibold text-slate-800">{recording.filename}</p>
-                      <p className="text-slate-500">{formatDateTime(recording.startTime)}</p>
-                      <p className="text-xs text-slate-500">Tip: {recording.recordingType}</p>
-                    </div>
-                    <a
-                      href={recording.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
+          <div className="grid gap-6">
+            <StudentPanel title="Înregistrările Lecției">
+              {recordingsLoading ? (
+                <p className="text-sm text-[#75697c]">Se încarcă înregistrările...</p>
+              ) : recordingsError ? (
+                <StudentError message={recordingsError} />
+              ) : recordings.length === 0 ? (
+                <StudentEmptyState
+                  title="Nu există înregistrări disponibile"
+                  description={
+                    lesson.streamCallId
+                      ? "Apelul este asociat, dar încă nu au fost generate înregistrări."
+                      : "Lecția nu are apel video asociat, deci nu pot exista înregistrări."
+                  }
+                />
+              ) : (
+                <ul className="space-y-3">
+                  {recordings.map((recording) => (
+                    <li
+                      key={recording.id}
+                      className="rounded-3xl border p-4"
+                      style={{
+                        background: "linear-gradient(180deg, #ffffff 0%, #fff8f1 100%)",
+                        borderColor: "rgba(234,223,235,0.95)",
+                      }}
                     >
-                      Redă
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <h3 className="text-lg font-semibold text-slate-900">Note manuale</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Adaugă și verifică notele introduse de profesor pentru elevii din această grupă.
-            </p>
-
-            {students.length === 0 ? (
-              <div className="mt-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-600">
-                Nu există elevi activi în această grupă a lecției.
-              </div>
-            ) : (
-              <div className="mt-4 space-y-4">
-                {students.map((student) => {
-                  const form = forms[student.studentId] ?? {
-                    value: "",
-                    comment: "",
-                    submitting: false,
-                    error: null,
-                    success: null,
-                  };
-                  const studentGrades = gradesByStudent[student.studentId] ?? [];
-
-                  return (
-                    <article
-                      key={student.studentId}
-                      className="rounded-xl border border-slate-200 bg-white p-5"
-                    >
-                      <div className="flex flex-col gap-1">
-                        <h4 className="text-lg font-semibold text-slate-900">
-                          {student.firstName} {student.lastName}
-                        </h4>
-                        <p className="text-sm text-slate-600">{student.email}</p>
-                        <p className="text-sm text-slate-500">
-                          Nivel:{" "}
-                          {student.currentLevel
-                            ? `${student.currentLevel.code} - ${student.currentLevel.title}`
-                            : "N/A"}
-                        </p>
-                      </div>
-
-                      <form
-                        className="mt-4 grid gap-3 md:grid-cols-[140px_1fr_auto]"
-                        onSubmit={(event) => handleSaveGrade(event, student.studentId)}
+                      <p className="text-base font-bold text-[#17141f]">{recording.filename}</p>
+                      <p className="mt-1 text-sm text-[#75697c]">{formatDateTime(recording.startTime)}</p>
+                      <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#8b7c8f]">
+                        Tip: {recording.recordingType}
+                      </p>
+                      <a
+                        href={recording.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-4 inline-flex items-center rounded-full border border-[#eadfeb] bg-white px-4 py-2 text-sm font-semibold text-[#17141f] transition-colors hover:bg-[#fff8f1]"
                       >
-                        <input
-                          type="number"
-                          min={1}
-                          max={10}
-                          step={1}
-                          value={form.value}
-                          onChange={(event) =>
-                            updateStudentForm(student.studentId, {
-                              value: event.target.value,
-                              error: null,
-                              success: null,
-                            })
-                          }
-                          placeholder="Notă 1-10"
-                          className="rounded border border-slate-300 px-3 py-2 text-sm"
-                        />
-                        <textarea
-                          value={form.comment}
-                          onChange={(event) =>
-                            updateStudentForm(student.studentId, {
-                              comment: event.target.value,
-                              error: null,
-                              success: null,
-                            })
-                          }
-                          placeholder="Comentariu opțional"
-                          rows={2}
-                          className="rounded border border-slate-300 px-3 py-2 text-sm"
-                        />
-                        <button
-                          type="submit"
-                          disabled={form.submitting}
-                          className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                        Redă înregistrarea
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </StudentPanel>
+
+            <StudentPanel title="Note Manuale">
+              {students.length === 0 ? (
+                <StudentEmptyState
+                  title="Nu există elevi activi în grupă"
+                  description="Adaugă sau reactivează elevii din grupă pentru a putea introduce note."
+                />
+              ) : (
+                <div className="space-y-4">
+                  {students.map((student) => {
+                    const form = forms[student.studentId] ?? {
+                      value: "",
+                      comment: "",
+                      submitting: false,
+                      error: null,
+                      success: null,
+                    };
+                    const studentGrades = gradesByStudent[student.studentId] ?? [];
+
+                    return (
+                      <article
+                        key={student.studentId}
+                        className="rounded-3xl border p-5"
+                        style={{
+                          background: "linear-gradient(180deg, #ffffff 0%, #fff8f1 100%)",
+                          borderColor: "rgba(234,223,235,0.95)",
+                        }}
+                      >
+                        <div className="flex flex-col gap-1">
+                          <h4 className="text-lg font-black text-[#17141f]">
+                            {student.firstName} {student.lastName}
+                          </h4>
+                          <p className="text-sm text-[#75697c]">{student.email}</p>
+                          <p className="text-sm text-[#8b7c8f]">
+                            Nivel:{" "}
+                            {student.currentLevel
+                              ? `${student.currentLevel.code} - ${student.currentLevel.title}`
+                              : "N/A"}
+                          </p>
+                        </div>
+
+                        <form
+                          className="mt-4 grid gap-3 md:grid-cols-[140px_1fr_auto]"
+                          onSubmit={(event) => handleSaveGrade(event, student.studentId)}
                         >
-                          {form.submitting ? "Se salvează..." : "Salvează nota"}
-                        </button>
-                      </form>
+                          <input
+                            type="number"
+                            min={1}
+                            max={10}
+                            step={1}
+                            value={form.value}
+                            onChange={(event) =>
+                              updateStudentForm(student.studentId, {
+                                value: event.target.value,
+                                error: null,
+                                success: null,
+                              })
+                            }
+                            placeholder="Notă 1-10"
+                            className="rounded-2xl border border-[#eadfeb] bg-white px-4 py-3 text-sm text-[#17141f] outline-none transition-colors focus:border-[#9697f3]"
+                          />
+                          <textarea
+                            value={form.comment}
+                            onChange={(event) =>
+                              updateStudentForm(student.studentId, {
+                                comment: event.target.value,
+                                error: null,
+                                success: null,
+                              })
+                            }
+                            placeholder="Comentariu opțional"
+                            rows={2}
+                            className="rounded-2xl border border-[#eadfeb] bg-white px-4 py-3 text-sm text-[#17141f] outline-none transition-colors focus:border-[#9697f3]"
+                          />
+                          <button
+                            type="submit"
+                            disabled={form.submitting}
+                            className="rounded-full bg-[#9697f3] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(150,151,243,0.24)] disabled:opacity-60"
+                          >
+                            {form.submitting ? "Se salvează..." : "Salvează nota"}
+                          </button>
+                        </form>
 
-                      {form.error ? (
-                        <p className="mt-2 text-sm text-red-600">{form.error}</p>
-                      ) : null}
-                      {form.success ? (
-                        <p className="mt-2 text-sm text-emerald-600">{form.success}</p>
-                      ) : null}
+                        {form.error ? (
+                          <p className="mt-3 text-sm text-[#a04469]">{form.error}</p>
+                        ) : null}
+                        {form.success ? (
+                          <p className="mt-3 text-sm text-[#177245]">{form.success}</p>
+                        ) : null}
 
-                      <div className="mt-4">
-                        <p className="text-sm font-semibold text-slate-700">
-                          Note manuale existente pentru această lecție
-                        </p>
-                        {studentGrades.length === 0 ? (
-                          <p className="mt-1 text-sm text-slate-500">Încă nu există note.</p>
-                        ) : (
-                          <ul className="mt-2 space-y-2">
-                            {studentGrades.map((grade) => (
-                              <li
-                                key={grade.gradeId}
-                                className="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-                              >
-                                <span className="font-semibold">Valoare: {grade.value}</span>{" "}
-                                <span className="text-slate-500">
-                                  ({new Date(grade.gradedAt).toLocaleString()})
-                                </span>
-                                {grade.comment ? (
-                                  <p className="mt-1 text-slate-600">{grade.comment}</p>
-                                ) : null}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
+                        <div className="mt-5">
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#8b7c8f]">
+                            Note existente
+                          </p>
+                          {studentGrades.length === 0 ? (
+                            <p className="mt-2 text-sm text-[#75697c]">Încă nu există note pentru această lecție.</p>
+                          ) : (
+                            <ul className="mt-3 space-y-2">
+                              {studentGrades.map((grade) => (
+                                <li
+                                  key={grade.gradeId}
+                                  className="rounded-[20px] border border-[#eadfeb] bg-white px-4 py-3 text-sm text-[#5f5564]"
+                                >
+                                  <span className="font-semibold text-[#17141f]">Valoare: {grade.value}</span>{" "}
+                                  <span className="text-[#8b7c8f]">
+                                    ({new Date(grade.gradedAt).toLocaleString()})
+                                  </span>
+                                  {grade.comment ? (
+                                    <p className="mt-1 text-[#75697c]">{grade.comment}</p>
+                                  ) : null}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </StudentPanel>
           </div>
         </>
       )}
+        </div>
+      </div>
     </section>
   );
 }

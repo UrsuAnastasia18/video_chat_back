@@ -1,16 +1,17 @@
-import CallList from '@/components/CallList'
-import React from 'react'
+import CallList from "@/components/CallList";
+import HomeSectionShell from "@/components/HomeSectionShell";
+import React from "react";
 
 const Recordings = () => {
   return (
-    <section className= "flex size-full flex-col gap-10 text-black">
-      <h1 className="text-3xl font-bold">
-        Înregistrări
-      </h1>
+    <HomeSectionShell
+      eyebrow="Bibliotecă video"
+      title="Înregistrări"
+      description=""
+    >
+      <CallList type="recordings" />
+    </HomeSectionShell>
+  );
+};
 
-      <CallList type ="recordings"/>
-      </section>
-  )
-}
-
-export default Recordings
+export default Recordings;

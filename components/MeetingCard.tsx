@@ -40,13 +40,20 @@ const STATUS_LABELS: Record<string, string> = {
   "LIVE NOW": "În desfășurare",
 };
 
+const BANNER_STATUS_STYLES: Record<string, string> = {
+  SCHEDULED: "border-[#f6d98d] bg-[#fff4c9] text-[#8a6122]",
+  LIVE: "border-[#8cd7b2] bg-[#e9fff1] text-[#177245]",
+  COMPLETED: "border-[#eadfeb] bg-[#fff] text-[#6f6174]",
+  CANCELLED: "border-[#f0b3c7] bg-[#ffe6ef] text-[#a04469]",
+  "LIVE NOW": "border-[#8cd7b2] bg-[#e9fff1] text-[#177245]",
+};
+
 const MeetingCard = ({
   icon,
   title,
   date,
   subtitle,
   status,
-  isPreviousMeeting,
   buttonIcon1,
   handleClick,
   link,
@@ -59,18 +66,22 @@ const MeetingCard = ({
   variant = "default",
 }: MeetingCardProps) => {
   const isBannerVariant = variant === "banner";
+  const hasAnyAction =
+    (!primaryDisabled && !!buttonText) || !!link || !!(secondaryButtonText && onSecondaryClick) || !!emptyStateText;
 
   return (
     <section
       className={cn(
         "relative flex min-h-[220px] w-full flex-col justify-between overflow-hidden rounded-[14px] px-5 py-5 xl:max-w-[568px]",
-        isBannerVariant ? "text-white" : "bg-dark-1"
+        isBannerVariant ? "text-[#17141f]" : "bg-dark-1"
       )}
       style={
         isBannerVariant
           ? {
             background:
-              "linear-gradient(135deg, #1e2d40 0%, #243650 55%, #1a3a5c 100%)",
+              "linear-gradient(180deg, #ffffff 0%, #fff8f1 100%)",
+            border: "1px solid rgba(234,223,235,0.95)",
+            boxShadow: "0 18px 42px rgba(58,36,72,0.08)",
           }
           : undefined
       }
@@ -78,20 +89,24 @@ const MeetingCard = ({
       {isBannerVariant ? (
         <>
           <div
-            className="absolute inset-0 opacity-[0.035]"
+            className="absolute inset-0 opacity-[0.05]"
             style={{
               backgroundImage:
-                "repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 48px)," +
-                "repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 48px)",
+                "repeating-linear-gradient(0deg,#df6f98 0,#df6f98 1px,transparent 1px,transparent 48px)," +
+                "repeating-linear-gradient(90deg,#f6a43a 0,#f6a43a 1px,transparent 1px,transparent 48px)",
             }}
           />
           <div
             className="absolute -right-20 -top-20 h-52 w-52 rounded-full opacity-[0.08]"
-            style={{ background: "radial-gradient(circle, #4f8ef7 0%, transparent 70%)" }}
+            style={{ background: "radial-gradient(circle, #f3a9c2 0%, transparent 70%)" }}
           />
           <div
             className="absolute -bottom-10 left-1/3 h-36 w-36 rounded-full opacity-[0.05]"
-            style={{ background: "radial-gradient(circle, #818cf8 0%, transparent 70%)" }}
+            style={{ background: "radial-gradient(circle, #9697f3 0%, transparent 70%)" }}
+          />
+          <div
+            className="absolute bottom-8 right-10 h-24 w-24 rounded-full opacity-[0.08]"
+            style={{ background: "radial-gradient(circle, #ffe48c 0%, transparent 70%)" }}
           />
         </>
       ) : null}
@@ -102,18 +117,18 @@ const MeetingCard = ({
             <div
               className={cn(
                 "rounded-lg p-2.5",
-                isBannerVariant ? "bg-white/10 ring-1 ring-white/15" : "bg-dark-4"
+                isBannerVariant ? "bg-[#ffe6ef] ring-1 ring-[#f0b3c7]" : "bg-dark-4"
               )}
             >
               <Image src={icon} alt="upcoming" width={18} height={18} />
             </div>
             <div className="min-w-0">
-              <h1 className="truncate text-lg font-bold">{title}</h1>
+              <h1 className="truncate text-base font-bold">{title}</h1>
               {subtitle ? (
                 <p
                   className={cn(
                     "mt-1 text-sm",
-                    isBannerVariant ? "text-white/75" : "text-sky-1"
+                    isBannerVariant ? "text-[#75697c]" : "text-sky-1"
                   )}
                 >
                   {subtitle}
@@ -126,7 +141,7 @@ const MeetingCard = ({
               className={cn(
                 "rounded-full border px-2.5 py-1 text-[11px] font-semibold",
                 isBannerVariant
-                  ? "border-white/25 bg-white/10 text-white"
+                  ? BANNER_STATUS_STYLES[status] ?? "border-[#eadfeb] bg-white text-[#6f6174]"
                   : STATUS_STYLES[status] ?? "bg-slate-100 text-slate-700 border-slate-200"
               )}
             >
@@ -138,21 +153,13 @@ const MeetingCard = ({
         <div
           className={cn(
             "rounded-lg px-3 py-2",
-            isBannerVariant ? "bg-white/10 ring-1 ring-white/15" : "bg-dark-4"
+            isBannerVariant ? "bg-white ring-1 ring-[#eadfeb]" : "bg-dark-4"
           )}
         >
           <p
             className={cn(
-              "text-[11px] uppercase tracking-wide",
-              isBannerVariant ? "text-white/60" : "text-slate-400"
-            )}
-          >
-            Programată
-          </p>
-          <p
-            className={cn(
-              "mt-1 text-sm font-medium",
-              isBannerVariant ? "text-white" : "text-slate-100"
+              "text-sm font-medium",
+              isBannerVariant ? "text-[#17141f]" : "text-slate-100"
             )}
           >
             {date}
@@ -163,13 +170,16 @@ const MeetingCard = ({
       <article
         className={cn(
           "relative z-10 mt-4 border-t pt-4",
-          isBannerVariant ? "border-white/15" : "border-dark-4"
+          isBannerVariant ? "border-[#eadfeb]" : "border-dark-4"
         )}
       >
-        {!hideActions && (!isPreviousMeeting || secondaryButtonText) && (
+        {!hideActions && hasAnyAction && (
           <div className="flex flex-wrap items-center gap-2">
             {buttonText && !primaryDisabled ? (
-              <Button onClick={handleClick} className="rounded bg-blue-1 px-4 py-2 text-sm">
+              <Button
+                onClick={handleClick}
+                className="rounded-full border border-[#d8cff8] bg-[#9697f3] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(150,151,243,0.24)] hover:bg-[#7c7de8]"
+              >
                 {buttonIcon1 && (
                   <Image src={buttonIcon1} alt="feature" width={16} height={16} />
                 )}
@@ -184,8 +194,10 @@ const MeetingCard = ({
                   toast.success("Link copiat");
                 }}
                 className={cn(
-                  "px-4 py-2 text-sm",
-                  isBannerVariant ? "bg-white/10 text-white hover:bg-white/20" : "bg-dark-4"
+                  "rounded-full px-4 py-2 text-sm font-semibold",
+                  isBannerVariant
+                    ? "border border-[#eadfeb] bg-white text-[#17141f] hover:bg-[#fff8f1]"
+                    : "bg-dark-4"
                 )}
               >
                 <Image
@@ -201,8 +213,10 @@ const MeetingCard = ({
               <Button
                 onClick={onSecondaryClick}
                 className={cn(
-                  "rounded px-4 py-2 text-sm",
-                  isBannerVariant ? "bg-blue-1 hover:bg-blue-1/90" : "bg-blue-1"
+                  "rounded-full px-4 py-2 text-sm font-semibold shadow-[0_12px_24px_rgba(223,111,152,0.2)]",
+                  isBannerVariant
+                    ? "bg-[#df6f98] text-white hover:bg-[#cf5f88]"
+                    : "bg-blue-1"
                 )}
               >
                 {secondaryButtonText}
@@ -212,7 +226,7 @@ const MeetingCard = ({
               <p
                 className={cn(
                   "text-sm font-medium",
-                  isBannerVariant ? "text-white/70" : "text-slate-400"
+                  isBannerVariant ? "text-[#8b7c8f]" : "text-slate-400"
                 )}
               >
                 {emptyStateText}

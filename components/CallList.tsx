@@ -8,6 +8,7 @@ import MeetingCard from "./MeetingCard";
 import { Loader } from "./Loader";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
+import { sidebarLinks } from "@/constants";
 
 interface LessonItem {
   id: string;
@@ -136,6 +137,18 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
     }
   }, [type]);
 
+  const routeIcons = useMemo(
+    () => ({
+      ended:
+        sidebarLinks.find((link) => link.route === "/previous")?.imgUrl ?? "/icons/angle-double-left.png",
+      upcoming:
+        sidebarLinks.find((link) => link.route === "/upcoming")?.imgUrl ?? "/icons/angle-double-right.png",
+      recordings:
+        sidebarLinks.find((link) => link.route === "/recordings")?.imgUrl ?? "/icons/video-camera-alt.png",
+    }),
+    []
+  );
+
   if ((type === "recordings" && recordingsLoading) || (type !== "recordings" && isLessonsLoading)) {
     return <Loader />;
   }
@@ -147,7 +160,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
           recordings.map((rec) => (
             <MeetingCard
               key={rec.url}
-              icon="/icons/recording.svg"
+              icon={routeIcons.recordings}
               title={rec.filename?.substring(0, 20) || "Înregistrare"}
               date={new Date(rec.start_time).toLocaleString()}
               variant="banner"
@@ -182,34 +195,36 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
           const renderLessonCard = (lesson: LessonItem, forceLive: boolean) => {
             const scheduledStart = new Date(lesson.scheduledStart);
             const scheduledEnd = new Date(lesson.scheduledEnd);
+            const isInProgress = scheduledStart <= now && scheduledEnd > now;
             const hasCallLink = !!lesson.streamCallId;
             const meetingPath = hasCallLink ? `/meeting/${lesson.streamCallId}` : "";
-            const shareLink = hasCallLink
+            const shareLink = hasCallLink && isInProgress
               ? `${process.env.NEXT_PUBLIC_BASE_URL}${meetingPath}`
               : undefined;
+            const canOpenMeeting = hasCallLink && isInProgress;
 
             return (
               <MeetingCard
                 key={lesson.id}
-                icon={type === "ended" ? "/icons/previous.svg" : "/icons/upcoming.svg"}
+                icon={type === "ended" ? routeIcons.ended : routeIcons.upcoming}
                 title={lesson.title}
                 subtitle={`${lesson.group.name} (${lesson.group.level.code})`}
-                status={forceLive ? "LIVE NOW" : lesson.status}
+                status={type === "ended" ? undefined : forceLive ? "LIVE NOW" : lesson.status}
                 variant="banner"
                 date={`${scheduledStart.toLocaleString()} - ${scheduledEnd.toLocaleString()}`}
                 isPreviousMeeting={type === "ended"}
-                buttonText="Deschide ședința"
+                buttonText={canOpenMeeting ? "Deschide ședința" : undefined}
                 hideActions={false}
-                primaryDisabled={!hasCallLink}
+                primaryDisabled={!canOpenMeeting}
                 emptyStateText={!hasCallLink ? "Nu există apel asociat" : undefined}
                 handleClick={() => {
-                  if (!hasCallLink) {
+                  if (!canOpenMeeting) {
                     return;
                   }
                   router.push(meetingPath);
                 }}
                 link={shareLink}
-                secondaryButtonText={isTeacher ? "Deschide lecția" : undefined}
+                secondaryButtonText={isTeacher ? "Detalii ședință" : undefined}
                 onSecondaryClick={
                   isTeacher
                     ? () => router.push(`/teacher/lessons/${lesson.id}`)
@@ -250,7 +265,9 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
           );
         })()
       ) : (
-        <h1>{noCallsMessage}</h1>
+        <div className="rounded-[22px] border border-dashed border-[#eadfeb] bg-white px-5 py-8 text-center text-sm font-semibold text-[#75697c] shadow-[0_14px_32px_rgba(58,36,72,0.06)]">
+          {noCallsMessage}
+        </div>
       )}
     </div>
   );

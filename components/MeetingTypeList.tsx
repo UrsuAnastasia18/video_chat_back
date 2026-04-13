@@ -9,6 +9,7 @@ import { useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { toast } from "sonner";
 import { Textarea } from "./ui/textarea";
 import ReactDatePicker from "react-datepicker";
+import { sidebarLinks } from "@/constants";
 
 type MeetingState =
   | "isScheduleMeeting"
@@ -67,6 +68,10 @@ const MeetingTypeList = () => {
   const isStudent = role === "STUDENT";
   const canUseGeneralCallTools = isTeacher || isStudent || !role;
   const client = useStreamVideoClient();
+  const recordingsIcon =
+    sidebarLinks.find((link) => link.route === "/recordings")?.imgUrl ?? "/icons/video-camera-alt.png";
+  const personalRoomIcon =
+    sidebarLinks.find((link) => link.route === "/personal-room")?.imgUrl ?? "/icons/plus.png";
 
   const [values, setValues] = useState({
     title: "",
@@ -239,7 +244,7 @@ const MeetingTypeList = () => {
 
       {isTeacher && (
         <HomeCard
-          img="/icons/recordings.svg"
+          img={recordingsIcon}
           title="Vezi înregistrările"
           description="Verifică înregistrările lecțiilor și apelurilor"
           handleClick={() => router.push("/recordings")}
@@ -259,7 +264,7 @@ const MeetingTypeList = () => {
 
       {isStudent && (
         <HomeCard
-          img="/icons/add-personal.svg"
+          img={personalRoomIcon}
           title="Camera personală"
           description="Deschide camera ta personală"
           handleClick={() => router.push("/personal-room")}

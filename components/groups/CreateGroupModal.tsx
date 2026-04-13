@@ -126,49 +126,62 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
 
             {/* Modal */}
             <div
-                className="relative w-full max-w-md rounded-2xl"
+                className="relative w-full max-w-xl overflow-hidden rounded-[32px]"
                 style={{
-                    background: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                    background: "linear-gradient(180deg,#ffffff 0%,#fff8f1 100%)",
+                    border: '1px solid #eadfeb',
+                    boxShadow: '0 26px 80px rgba(58,36,72,0.18)',
                 }}
             >
+                <div
+                    className="pointer-events-none absolute inset-0 opacity-[0.05]"
+                    style={{
+                        backgroundImage:
+                            "repeating-linear-gradient(0deg,#df6f98 0,#df6f98 1px,transparent 1px,transparent 48px)," +
+                            "repeating-linear-gradient(90deg,#f6a43a 0,#f6a43a 1px,transparent 1px,transparent 48px)",
+                    }}
+                />
+                <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[radial-gradient(circle,rgba(243,169,194,0.28)_0%,transparent_68%)]" />
+                <div className="pointer-events-none absolute -bottom-10 left-8 h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(150,151,243,0.18)_0%,transparent_72%)]" />
+
                 {/* Header */}
                 <div
-                    className="flex items-center justify-between px-6 py-4"
-                    style={{ borderBottom: '1px solid #f1f5f9' }}
+                    className="relative z-10 flex items-center justify-between px-7 py-5"
+                    style={{ borderBottom: '1px solid #f1e4ec' }}
                 >
                     <div className="flex items-center gap-3">
                         <div
-                            className="flex h-8 w-8 items-center justify-center rounded-lg"
-                            style={{ background: 'rgba(79,142,247,0.1)' }}
+                            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#f0b3c7] bg-[#ffe6ef] shadow-[0_10px_24px_rgba(223,111,152,0.16)]"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="#4f8ef7" strokeWidth={2}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="#a04469" strokeWidth={1.8}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
                             </svg>
                         </div>
-                        <h2 className="text-base font-semibold" style={{ color: '#1e293b' }}>
-                            Creează o grupă nouă
-                        </h2>
+                        <div>
+                            
+                            <h2 className="mt-1 text-3xl font-black tracking-[-0.03em]" style={{ color: '#17141f' }}>
+                                Creează o grupă nouă
+                            </h2>
+                        </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
-                        style={{ color: '#94a3b8' }}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#f1f5f9' }}
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-[#eadfeb] bg-white transition-colors"
+                        style={{ color: '#8b7c8f' }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#fff1f6' }}
                         onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
                 {/* Body */}
-                <div className="flex flex-col gap-4 px-6 py-5">
+                <div className="relative z-10 flex flex-col gap-5 px-7 py-6">
                     {/* Name */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#64748b' }}>
+                        <label className="text-[11px] font-black uppercase tracking-[0.16em]" style={{ color: '#75697c' }}>
                             Numele grupei <span style={{ color: '#ef4444' }}>*</span>
                         </label>
                         <input
@@ -178,20 +191,20 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
                             onChange={(e) => { setName(e.target.value); if (error) setError(null); }}
                             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                             placeholder="ex. B2 avansați – Luni"
-                            className="w-full rounded-xl px-4 py-2.5 text-sm outline-none transition-all"
+                            className="w-full rounded-2xl px-4 py-3 text-sm outline-none transition-all"
                             style={{
-                                background: '#f8fafc',
-                                border: error ? '1.5px solid #ef4444' : '1.5px solid #e2e8f0',
-                                color: '#1e293b',
+                                background: '#fffdfb',
+                                border: error ? '1.5px solid #ef4444' : '1.5px solid #eadfeb',
+                                color: '#17141f',
                             }}
                             onFocus={(e) => {
-                                if (!error) (e.target as HTMLElement).style.borderColor = '#4f8ef7'
+                                if (!error) (e.target as HTMLElement).style.borderColor = '#df6f98'
                                     ; (e.target as HTMLElement).style.boxShadow = error
                                         ? '0 0 0 3px rgba(239,68,68,0.1)'
-                                        : '0 0 0 3px rgba(79,142,247,0.12)'
+                                        : '0 0 0 3px rgba(223,111,152,0.12)'
                             }}
                             onBlur={(e) => {
-                                if (!error) (e.target as HTMLElement).style.borderColor = '#e2e8f0'
+                                if (!error) (e.target as HTMLElement).style.borderColor = '#eadfeb'
                                     ; (e.target as HTMLElement).style.boxShadow = 'none'
                             }}
                         />
@@ -207,26 +220,26 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
 
                     {/* Description */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#64748b' }}>
+                        <label className="text-[11px] font-black uppercase tracking-[0.16em]" style={{ color: '#75697c' }}>
                             Descriere <span className="normal-case font-normal" style={{ color: '#94a3b8' }}>(opțional)</span>
                         </label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Scurtă descriere a focusului sau programului grupei..."
+                            placeholder="Scurtă descriere a grupei..."
                             rows={3}
-                            className="w-full resize-none rounded-xl px-4 py-2.5 text-sm outline-none transition-all"
+                            className="w-full resize-none rounded-2xl px-4 py-3 text-sm outline-none transition-all"
                             style={{
-                                background: '#f8fafc',
-                                border: '1.5px solid #e2e8f0',
-                                color: '#1e293b',
+                                background: '#fffdfb',
+                                border: '1.5px solid #eadfeb',
+                                color: '#17141f',
                             }}
                             onFocus={(e) => {
-                                ; (e.target as HTMLElement).style.borderColor = '#4f8ef7'
-                                    ; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(79,142,247,0.12)'
+                                ; (e.target as HTMLElement).style.borderColor = '#df6f98'
+                                    ; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(223,111,152,0.12)'
                             }}
                             onBlur={(e) => {
-                                ; (e.target as HTMLElement).style.borderColor = '#e2e8f0'
+                                ; (e.target as HTMLElement).style.borderColor = '#eadfeb'
                                     ; (e.target as HTMLElement).style.boxShadow = 'none'
                             }}
                         />
@@ -234,17 +247,27 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
 
                     {/* Level */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#64748b' }}>
+                        <label className="text-[11px] font-black uppercase tracking-[0.16em]" style={{ color: '#75697c' }}>
                             Nivelul grupei <span style={{ color: '#ef4444' }}>*</span>
                         </label>
                         <select
                             value={levelId}
                             onChange={(e) => { setLevelId(e.target.value); if (error) setError(null); }}
-                            className="w-full rounded-xl px-4 py-2.5 text-sm outline-none transition-all"
+                            className="w-full rounded-2xl px-4 py-3 text-sm outline-none transition-all"
                             style={{
-                                background: '#f8fafc',
-                                border: error && !levelId ? '1.5px solid #ef4444' : '1.5px solid #e2e8f0',
-                                color: '#1e293b',
+                                background: '#fffdfb',
+                                border: error && !levelId ? '1.5px solid #ef4444' : '1.5px solid #eadfeb',
+                                color: '#17141f',
+                            }}
+                            onFocus={(e) => {
+                                if (!(error && !levelId)) (e.target as HTMLElement).style.borderColor = '#df6f98'
+                                    ; (e.target as HTMLElement).style.boxShadow = error && !levelId
+                                        ? '0 0 0 3px rgba(239,68,68,0.1)'
+                                        : '0 0 0 3px rgba(223,111,152,0.12)'
+                            }}
+                            onBlur={(e) => {
+                                if (!(error && !levelId)) (e.target as HTMLElement).style.borderColor = '#eadfeb'
+                                    ; (e.target as HTMLElement).style.boxShadow = 'none'
                             }}
                         >
                             <option value="">Selectează nivelul</option>
@@ -264,15 +287,15 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
 
                 {/* Footer */}
                 <div
-                    className="flex items-center justify-end gap-3 px-6 py-4"
-                    style={{ borderTop: '1px solid #f1f5f9' }}
+                    className="relative z-10 flex items-center justify-end gap-3 px-7 py-5"
+                    style={{ borderTop: '1px solid #f1e4ec' }}
                 >
                     <button
                         onClick={onClose}
                         disabled={loading}
-                        className="rounded-xl px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
-                        style={{ color: '#64748b' }}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#f1f5f9' }}
+                        className="rounded-full px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
+                        style={{ color: '#75697c' }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#fff1f6' }}
                         onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                     >
                         Anulează
@@ -280,8 +303,8 @@ export function CreateGroupModal({ open, onClose, onCreated }: CreateGroupModalP
                     <button
                         onClick={handleSubmit}
                         disabled={loading}
-                        className="flex items-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
-                        style={{ background: '#4f8ef7', boxShadow: '0 4px 12px rgba(79,142,247,0.3)' }}
+                        className="flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+                        style={{ background: '#9697f3', boxShadow: '0 16px 34px rgba(150,151,243,0.3)' }}
                     >
                         {loading ? (
                             <>

@@ -182,12 +182,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
         : await tx.groupMembership.create({
             data: { groupId, studentId },
           });
-
       await tx.studentProfile.update({
         where: { id: studentId },
         data: { currentLevelId: result.group.levelId },
       });
-
       return membershipRecord;
     });
 

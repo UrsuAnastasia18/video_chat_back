@@ -9,6 +9,7 @@ export const Loader = () => {
             alt="Se încarcă"
             width={50}
             height={50}
+            loading="eager"
             />
         </div>
     )

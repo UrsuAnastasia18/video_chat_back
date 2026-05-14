@@ -102,7 +102,7 @@ const HomeCard = ({ className, img, title, description, handleClick }: HomeCardP
           width={22}
           height={22}
           className="opacity-95"
-          style={{ filter: 'brightness(0) saturate(100%)' }}
+          style={{ width: '22px', height: '22px', filter: 'brightness(0) saturate(100%)' }}
         />
       </div>
 

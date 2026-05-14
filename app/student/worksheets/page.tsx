@@ -2,14 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { sidebarLinks } from "@/constants";
 import {
   StudentChip,
   StudentEmptyState,
   StudentError,
   StudentHero,
   StudentLoadingGrid,
-  StudentPageHeader,
   StudentPanel,
 } from "@/components/student/StudentShell";
 
@@ -45,8 +43,6 @@ export default function StudentWorksheetsPage() {
   const [statuses, setStatuses] = useState<Record<string, SubmissionStatus>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const worksheetsIcon =
-    sidebarLinks.find((link) => link.route === "/student/worksheets")?.imgUrl ?? "/icons/edit.png";
 
   useEffect(() => {
     const load = async () => {

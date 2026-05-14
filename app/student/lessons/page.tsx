@@ -2,19 +2,12 @@
 
 import { useState } from "react";
 import CallList from "@/components/CallList";
-import { sidebarLinks } from "@/constants";
-import {
-  StudentChip,
-  StudentHero,
-  StudentPageHeader,
-} from "@/components/student/StudentShell";
+import { StudentHero } from "@/components/student/StudentShell";
 
 type LessonView = "upcoming" | "previous";
 
 export default function StudentLessonsPage() {
   const [view, setView] = useState<LessonView>("upcoming");
-  const lessonsIcon =
-    sidebarLinks.find((link) => link.route === "/student/lessons")?.imgUrl ?? "/icons/computer.png";
 
   return (
     <section className="flex size-full flex-col gap-6 text-black">

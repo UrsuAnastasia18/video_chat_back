@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { sidebarLinks } from "@/constants";
 import {
   StudentChip,
   StudentEmptyState,
   StudentError,
   StudentHero,
   StudentLoadingGrid,
-  StudentPageHeader,
   StudentPanel,
 } from "@/components/student/StudentShell";
 
@@ -35,8 +33,6 @@ export default function StudentGradesPage() {
   const [grades, setGrades] = useState<StudentGrade[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const gradesIcon =
-    sidebarLinks.find((link) => link.route === "/student/grades")?.imgUrl ?? "/icons/graduation-cap.png";
   const worksheetGrades = grades.filter((grade) => grade.type === "WORKSHEET_AUTO");
   const oralGrades = grades.filter((grade) => grade.type === "ORAL_MANUAL");
   const averageGrade = grades.length

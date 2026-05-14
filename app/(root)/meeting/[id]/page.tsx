@@ -17,7 +17,7 @@ interface MeetingPageProps {
   export default function Meeting({ params }: MeetingPageProps) {
   const { id } = use(params);
 
-  const { user, isLoaded } = useUser();
+  const { isLoaded } = useUser();
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const { call, isCallLoading } = useGetCallById(id);
 

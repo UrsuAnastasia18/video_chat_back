@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { sidebarLinks } from "@/constants";
-import { StudentPageHeader } from "@/components/student/StudentShell";
 
 interface GroupData {
   id: string;
@@ -36,8 +34,6 @@ export default function StudentGroupPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [show, setShow] = useState(false);
-  const groupIcon =
-    sidebarLinks.find((link) => link.route === "/student/group")?.imgUrl ?? "/icons/users-alt.png";
 
   useEffect(() => {
     (async () => {

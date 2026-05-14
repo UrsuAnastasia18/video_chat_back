@@ -1,33 +1,36 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from "react";
-import {StreamVideo, StreamVideoClient} from "@stream-io/video-react-sdk";
+import { ReactNode, useEffect, useMemo } from "react";
+import { StreamVideo, StreamVideoClient } from "@stream-io/video-react-sdk";
 import { useUser } from "@clerk/nextjs";
 import { tokenProvider } from "@/actions/stream.actions";
 import { Loader } from "@/components/Loader";
 
 const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
 
-const StreamVideoProvider= ({children}:{children:ReactNode}) => {
-    const [videoClient, setVideoClient] = useState<StreamVideoClient>();
-    const {user, isLoaded } = useUser();
+const StreamVideoProvider = ({ children }: { children: ReactNode }) => {
+    const { user, isLoaded } = useUser();
 
-    useEffect(() => {
+    const videoClient = useMemo(() => {
         if(!isLoaded || !user) return;
         if(!apiKey) throw new Error('Stream API key missing')
-    
-        const client = new StreamVideoClient({
+
+        return new StreamVideoClient({
             apiKey,
             user: {
-                id: user?.id,
-                name: user?.username || user?.id,
-                image: user?.imageUrl,
+                id: user.id,
+                name: user.username || user.id,
+                image: user.imageUrl,
             },
             tokenProvider,
         })
+        }, [isLoaded, user]);
 
-        setVideoClient(client);
-        }, [user, isLoaded]);
+        useEffect(() => {
+            return () => {
+                videoClient?.disconnectUser();
+            };
+        }, [videoClient]);
 
         if(!videoClient) return <Loader />
 

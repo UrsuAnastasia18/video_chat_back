@@ -1,6 +1,18 @@
 import { auth } from "@clerk/nextjs/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { syncClerkUserToDatabase } from "@/lib/sync-user";
+
+type CurrentUser = Prisma.UserGetPayload<{
+  include: {
+    teacherProfile: true;
+    studentProfile: true;
+  };
+}>;
+
+type TeacherUser = CurrentUser & {
+  teacherProfile: NonNullable<CurrentUser["teacherProfile"]>;
+};
 
 /**
  * Gets the current authenticated user from DB using Clerk session.
@@ -49,7 +61,7 @@ export async function requireCurrentUser() {
  * Gets current user and ensures they have a TEACHER_ADMIN role.
  * Throws if not authenticated, not found, or not a teacher.
  */
-export async function requireTeacher() {
+export async function requireTeacher(): Promise<TeacherUser> {
   const user = await requireCurrentUser();
 
   if (user.role !== "TEACHER_ADMIN") {
@@ -60,6 +72,5 @@ export async function requireTeacher() {
     throw new Error("Forbidden: Teacher profile not found");
   }
 
-  return user;
+  return user as TeacherUser;
 }
-

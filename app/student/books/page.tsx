@@ -1,14 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { sidebarLinks } from "@/constants";
 import {
-  StudentChip,
   StudentEmptyState,
   StudentError,
   StudentHero,
   StudentLoadingGrid,
-  StudentPageHeader,
   StudentPanel,
 } from "@/components/student/StudentShell";
 
@@ -30,8 +27,6 @@ export default function StudentBooksPage() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const booksIcon =
-    sidebarLinks.find((link) => link.route === "/student/books")?.imgUrl ?? "/icons/book-open-cover.png";
 
   useEffect(() => {
     const loadBooks = async () => {

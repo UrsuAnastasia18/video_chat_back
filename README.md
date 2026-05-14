@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hello English Video Chat
 
-## Getting Started
+Next.js app for online lessons, groups, books, worksheets, grades, Clerk auth,
+Stream video calls, and Prisma/Postgres data.
 
-First, run the development server:
+## Environment Setup
+
+The app does not keep production secrets in code. It reads configuration from
+environment variables.
+
+For local development, copy the example file:
+
+```bash
+cp .env.example .env
+cp .env.example .env.local
+```
+
+Then replace the Clerk and Stream placeholders with local/test keys.
+
+Local database default:
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5433/videochat_db"
+NEXT_PUBLIC_BASE_URL="http://localhost:3000"
+```
+
+Production values are configured in Vercel, not committed to Git:
+
+```env
+DATABASE_URL="postgresql://...neon.tech/neondb?sslmode=require"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="..."
+CLERK_SECRET_KEY="..."
+NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
+NEXT_PUBLIC_STREAM_API_KEY="..."
+STREAM_SECRET_KEY="..."
+NEXT_PUBLIC_BASE_URL="https://your-production-domain.vercel.app"
+```
+
+`NEXT_PUBLIC_BASE_URL` is optional for local browser flows. If it is missing,
+the app falls back to `window.location.origin`; on the server it falls back to
+`VERCEL_URL` or `http://localhost:3000`.
+
+## Local Development
+
+Start Postgres:
+
+```bash
+docker compose up -d
+```
+
+Apply local migrations:
+
+```bash
+npx prisma migrate deploy --schema prisma/schema.prisma
+```
+
+Start the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Production Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The production app runs on Vercel and uses Neon Postgres.
 
-## Learn More
+After setting `DATABASE_URL` in Vercel and Neon, apply production migrations
+from a local terminal by pointing `.env` at Neon, or by running with an inline
+`DATABASE_URL`:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+DATABASE_URL="postgresql://...neon.tech/neondb?sslmode=require" npx prisma migrate deploy --schema prisma/schema.prisma
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Do not run seed data in production unless you intentionally want demo/default
+content there.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Verification
 
-## Deploy on Vercel
+Before pushing production changes:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint
+npm test
+npm audit --omit=dev
+npm run build
+```

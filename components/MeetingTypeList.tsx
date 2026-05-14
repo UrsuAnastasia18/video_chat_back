@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Textarea } from "./ui/textarea";
 import ReactDatePicker from "react-datepicker";
 import { sidebarLinks } from "@/constants";
+import { getAppBaseUrl } from "@/lib/app-url";
 
 type MeetingState =
   | "isScheduleMeeting"
@@ -216,8 +217,8 @@ const MeetingTypeList = () => {
   };
 
   const meetingLink =
-    scheduledLessonResult?.streamCallId && process.env.NEXT_PUBLIC_BASE_URL
-      ? `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${scheduledLessonResult.streamCallId}`
+    scheduledLessonResult?.streamCallId
+      ? `${getAppBaseUrl()}/meeting/${scheduledLessonResult.streamCallId}`
       : "";
 
   return (

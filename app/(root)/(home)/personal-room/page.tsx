@@ -8,6 +8,7 @@ import { useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
+import { getAppBaseUrl } from "@/lib/app-url";
 
 const DetailItem = ({
   label,
@@ -57,7 +58,7 @@ const PremiumPanel = ({ children }: { children: React.ReactNode }) => (
 const PersonalRoom = () => {
   const { user } = useUser();
   const meetingId = user?.id;
-  const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${meetingId}?personal=true`;
+  const meetingLink = `${getAppBaseUrl()}/meeting/${meetingId}?personal=true`;
   const client = useStreamVideoClient();
   const { call } = useGetCallById(meetingId!);
   const router = useRouter();

@@ -9,6 +9,7 @@ import { Loader } from "./Loader";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
 import { sidebarLinks } from "@/constants";
+import { getAppBaseUrl } from "@/lib/app-url";
 
 interface LessonItem {
   id: string;
@@ -199,7 +200,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
             const hasCallLink = !!lesson.streamCallId;
             const meetingPath = hasCallLink ? `/meeting/${lesson.streamCallId}` : "";
             const shareLink = hasCallLink && isInProgress
-              ? `${process.env.NEXT_PUBLIC_BASE_URL}${meetingPath}`
+              ? `${getAppBaseUrl()}${meetingPath}`
               : undefined;
             const canOpenMeeting = hasCallLink && isInProgress;
 
